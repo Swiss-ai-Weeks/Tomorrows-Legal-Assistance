@@ -15,35 +15,21 @@ Your output should be a list of the classes and whether they are affected.
 Answer in the expected JSON format and don't generate any other content.
 
 classes:
-* traffic_law
-  * Definition: Minor violations of traffic rules. Usually handled administratively. No criminal record unless repeated or particularly dangerous.
-  * Examples / Measures:
-    * Setting the wrong arrival time on a parking disc → CHF 40 fine
-    * Speeding within town up to 15 km/h over the limit → warning or fine
-    * Speeding outside town up to 20 km/h over limit → fine
-    * Highway speeding up to 25 km/h over limit → fine
-  * Goal: Ensure compliance with traffic rules and prevention.
-* civil_law
-  * Definition: Liability and compensation matters related to traffic incidents. Focus is on financial/insurance consequences.
-  * Examples:
-    * Accidents with property or personal damage → liability insurance pays damages
-    * Insurance can reclaim payments in cases of gross negligence (e.g., driving under alcohol/drugs)
-    * Disputes over compensation after an accident
-  * Goal: Financial restoration and compensation of damages.
-* criminal_law
-  * Definition: Traffic offenses with criminal relevance. Penalties can include fines, license suspension, or imprisonment.
-  * Examples:
-    * Speeding >16 km/h in town, >21 km/h outside town. >25km/h highway
-    * Driving under significant influence of alcohol (>0.5 ‰)
-    * Dangerous driving, hit-and-run accidents
-    * Repeat offenders → traffic psychological assessment, immediate license suspension
-  * Goal: Protect life, health, and public safety.
+* traffic_law: Traffic law covers all legal provisions regulating road traffic. It governs the rights and obligations of road users and ensures safety and 
+order in traffic. This includes administrative fines such as speeding or parking violations, criminal offenses like driving under the influence of alcohol 
+with possible license withdrawal, and liability issues in connection with traffic accidents. It also encompasses related administrative and criminal 
+procedures, such as penalty orders, appeal deadlines, and cost consequences. Typical cases falling under traffic law are speeding, parking violations, 
+drunk driving, and accidents involving compensation claims.
+* employment_law: Employment law encompasses the entirety of legal provisions and regulations governing the relationship between employers and employees. 
+It regulates employment contracts, working conditions, occupational health and safety, and other aspects of the employment relationship. Issues related to 
+unemployment insurance also fall under employment law. It includes the ordinary termination of employment in private employment relationships, including 
+modification terminations. This particularly covers questions of nullity or abusive termination, notice periods, release from duties, termination 
+agreements, and protection against dismissal during statutory blocking periods due to illness, accident, or other reasons.
 
 expected_format:
 {{
     "traffic_law": bool,
-    "civil_law": bool,
-    "criminal_law": bool,
+    "employment_law": bool,
 }}
 
 user_input:
