@@ -1,4 +1,4 @@
-# Tomorrow's Legal Assistance: Processs Overview
+# Tomorrow's Legal Assistance: Process Overview
 In Context of electronic first notification of loss for a legal insurance  (employment, real estate and traffic criminal laws) this is how the process would look like:
 
 ## 1) Customer Submit electronically a Claim 
