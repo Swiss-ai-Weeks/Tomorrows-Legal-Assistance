@@ -1,6 +1,6 @@
 """Swiss Legal Case Analysis Agent.
 
-A LangGraph-based ReAct agent for analyzing Swiss legal cases.
+A LangGraph-based pipeline agent for analyzing Swiss legal cases.
 Provides case classification, win likelihood estimation, and time/cost analysis.
 """
 

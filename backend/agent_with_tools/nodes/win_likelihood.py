@@ -10,7 +10,7 @@ from backend.agent_with_tools.policies import WIN_LIKELIHOOD_PROMPT, MAX_RAG_CAL
 
 def win_likelihood_node(state: AgentState, llm) -> AgentState:
     """
-    Analyze likelihood of winning using ReAct with RAG and historic cases.
+    Analyze likelihood of winning using multi-source analysis with RAG and historic cases.
     
     Args:
         state: Current agent state
@@ -84,7 +84,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     except NotImplementedError:
         context_parts.append("Historic cases: Not available (stub implementation)")
     
-    # Use LLM for ReAct analysis
+    # Use LLM for synthesis and analysis
     full_context = "\n\n".join(context_parts)
     
     # Prepare enhanced prompt with baseline guidance

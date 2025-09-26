@@ -1,9 +1,9 @@
 """LangGraph implementation for Swiss legal case analysis agent.
 
-This module creates a ReAct-style agent that:
+This module creates a deterministic pipeline agent that:
 1. Ingests case descriptions and classifies them into legal categories
 2. Analyzes likelihood of winning using RAG and historic cases  
-3. Estimates time and cost in parallel
+3. Estimates time and cost in structured workflow
 4. Produces validated JSON results
 
 Example usage:
@@ -169,7 +169,7 @@ graph TD
     %% Conditional branching based on category
     Categorize --> Decision{Category = 'Andere'?}
     Decision -->|Yes| AggregateSkip[📊 Aggregate Node<br/>Return Category Only<br/>No Estimations]
-    Decision -->|No| WinLikelihood[🎯 Win Likelihood Node<br/>ReAct Analysis with RAG & Historic Cases]
+    Decision -->|No| WinLikelihood[🎯 Win Likelihood Node<br/>Multi-Source Analysis with RAG & Historic Cases]
     
     %% Main analysis flow
     WinLikelihood --> TimeCost[⏱️💰 Time & Cost Node<br/>Business Logic Estimation]
