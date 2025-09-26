@@ -133,7 +133,7 @@ def markdown_to_prompt_template(
     relative_prompt_path: str,
 ) -> PromptTemplate | ChatPromptTemplate:
     absolute_prompt_path = (
-        f"{os.path.dirname(os.path.abspath(__file__))}/../{relative_prompt_path}"
+        f"{os.path.dirname(os.path.abspath(__file__))}/{relative_prompt_path}"
     )
     with open(absolute_prompt_path, "r") as f:
         markdown_content = f.read()
