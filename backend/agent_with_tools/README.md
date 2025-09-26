@@ -1,13 +1,24 @@
 # Swiss Legal Case Analysis Agent
 
-A LangGraph-based ReAct agent for analyzing Swiss legal cases. This agent ingests case descriptions and provides comprehensive analysis including case classification, win likelihood estimation, and time/cost projections.
+A LangGraph-based pipeline agent for analyzing Swiss legal cases. This agent ingests case descriptions and provides comprehensive analysis including case classification, win likelihood estimation, and time/cost projections through a structured workflow with integrated tools.
+
+## Architecture
+
+This agent implements a **deterministic pipeline architecture** with the following characteristics:
+
+- **Fixed Node Sequence**: Predetermined workflow with conditional branching based on case category
+- **Tool Integration**: Each node uses specific tools in a predefined order (not LLM-directed)
+- **Predictable Flow**: Reliable, reproducible analysis suitable for legal domain requirements
+- **Error Resilience**: Graceful fallbacks when tools are unavailable or fail
+
+**Note**: This is NOT a ReAct agent - the LLM does not dynamically choose tools or reasoning paths. Instead, it's a structured pipeline that uses the LLM for synthesis and extraction within each node.
 
 ## Features
 
 - **Case Classification**: Automatically categorizes cases into: Arbeitsrecht, Immobilienrecht, Strafverkehrsrecht, or Andere
 - **Win Likelihood Analysis**: Uses RAG retrieval of Swiss law and historic cases to estimate success probability (1-100)
 - **Time & Cost Estimation**: Provides realistic time estimates and cost breakdowns  
-- **ReAct Processing**: Step-by-step reasoning with tool usage for transparent decision making
+- **Structured Pipeline**: Deterministic workflow with conditional branching and integrated tool usage
 - **Conditional Analysis**: Smart workflow that skips analysis for unsupported categories
 - **Business Logic Baseline**: Integrated likelihood estimation with explanations for transparency
 
@@ -28,7 +39,7 @@ graph TD
     %% Conditional branching based on category
     Categorize --> Decision{Category = 'Andere'?}
     Decision -->|Yes| AggregateSkip[📊 Aggregate Node<br/>Return Category Only<br/>No Estimations]
-    Decision -->|No| WinLikelihood[🎯 Win Likelihood Node<br/>ReAct Analysis with RAG & Historic Cases]
+    Decision -->|No| WinLikelihood[🎯 Win Likelihood Node<br/>Multi-Source Analysis with RAG & Historic Cases]
     
     %% Main analysis flow
     WinLikelihood --> TimeCost[⏱️💰 Time & Cost Node<br/>Business Logic Estimation]
@@ -43,7 +54,7 @@ graph TD
 
 1. **Ingest**: Normalizes input and initializes working memory
 2. **Categorize**: Classifies cases using ML/business logic with user fallback (92%+ confidence)
-3. **Win Likelihood**: ReAct analysis using Swiss law RAG, historic cases, and business logic baseline
+3. **Win Likelihood**: Multi-source analysis using Swiss law RAG, historic cases, and business logic baseline
 4. **Time & Cost**: Business logic estimation with Swiss legal fee structures  
 5. **Aggregate**: Validates and formats final JSON output with explanation compilation
 
@@ -208,58 +219,13 @@ pytest backend/agent/test_agent.py -v
 
 ### Policies & Prompts
 
-Customize behavior via `backend/agent/policies.py`:
+Customize behavior via `backend/agent_with_tools/policies.py`:
 
-- ReAct system prompts for each node
+- System prompts for each pipeline node
 - Tool call limits and constraints  
 - Default values and thresholds
 - Swiss legal domain knowledge
 
-### Tool Implementation
-
-Tools are currently stubs in `backend/agent/tools/`. Replace with real implementations:
-
-```python
-# backend/agent/tools/rag_swiss_law.py
-def rag_swiss_law(query: str, top_k: int = 5):
-    # Replace with real Chroma/embedding search
-    return search_swiss_law_db(query, top_k)
-```
-
-## Example Cases
-
-The agent handles various Swiss legal scenarios:
-
-### Employment Law (Arbeitsrecht)
-- Wrongful termination disputes
-- Wage and overtime claims  
-- Workplace discrimination
-- Contract violations
-
-### Real Estate Law (Immobilienrecht)
-- Property purchase disputes
-- Rental agreement conflicts
-- Construction defects
-- Zoning and planning issues
-
-### Traffic Criminal Law (Strafverkehrsrecht)
-- Traffic violations and fines
-- License suspension cases
-- Criminal traffic offenses
-- Insurance disputes
-
-### Other Legal Matters (Andere)
-- Contract disputes
-- Consumer protection
-- Administrative law
-- General civil litigation
-
-## Performance Considerations
-
-- **Tool Call Limits**: Max 6 tool calls per case to prevent excessive API usage
-- **Parallel Processing**: Win likelihood and time/cost analysis run simultaneously  
-- **Caching**: Consider caching RAG results for similar queries
-- **Error Handling**: Graceful fallbacks when tools are unavailable
 
 ## Development Conventions
 

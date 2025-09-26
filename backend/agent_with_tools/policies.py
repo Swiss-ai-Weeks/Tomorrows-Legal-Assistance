@@ -1,4 +1,4 @@
-"""ReAct prompts, tool-calling rules, and guards for the legal agent."""
+"""System prompts, tool-calling rules, and guards for the legal agent."""
 
 # Global system message for Apertus
 GLOBAL_SYSTEM_PROMPT = """You are a Swiss law case-triage analyst. Use tools to retrieve statutes and similar cases. If facts are missing for classification, ask precisely via ask_user. Output only the final JSON with fields likelihood_win, estimated_time, and estimated_cost. Use tools sparingly and prefer high-signal evidence.

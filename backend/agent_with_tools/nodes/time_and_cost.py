@@ -17,7 +17,7 @@ from backend.agent_with_tools.policies import (
 
 def time_and_cost_node(state: AgentState, llm) -> AgentState:
     """
-    Estimate time and cost using ReAct with RAG and business logic tools.
+    Estimate time and cost using multi-source analysis with RAG and business logic tools.
     
     Args:
         state: Current agent state
