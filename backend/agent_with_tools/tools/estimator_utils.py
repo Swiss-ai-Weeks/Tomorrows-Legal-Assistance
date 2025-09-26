@@ -35,7 +35,7 @@ def extract_subcategory(case_text: str, category: str) -> str:
         elif any(word in case_lower for word in ["workload", "overtime", "work hours"]):
             return "increase_in_workload" 
         else:
-            return "termination_poor_performan"
+            return "termination_poor_performance"
     
     elif category == "traffic_criminal_law":
         if any(word in case_lower for word in ["alcohol", "drunk", "dui", "influence"]):

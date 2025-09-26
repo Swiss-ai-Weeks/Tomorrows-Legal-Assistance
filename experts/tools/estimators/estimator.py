@@ -16,7 +16,7 @@ def estimate_chance_of_winning(claims_type: str, claims_category: str):
         else:
             chance_of_winning = "unknown"
     elif claims_type == "employment_law":
-        if claims_category == "termination_poor_performan":
+        if claims_category == "termination_poor_performance":
             chance_of_winning = "20%"
         elif claims_category == "increase_in_workload":
             chance_of_winning = "0%"
@@ -50,7 +50,7 @@ def estimate_time(claims_type: str, claims_category: str):
         else:
             time = "unknown"
     elif claims_type == "employment_law":
-        if claims_category == "termination_poor_performan":
+        if claims_category == "termination_poor_performance":
             time = "3 Months"
         elif claims_category == "increase_in_workload":
             time = "0 Months"
@@ -84,7 +84,7 @@ def estimate_costs(claims_type: str, claims_category: str):
         else:
             costs = "unknown"
     elif claims_type == "employment_law":
-        if claims_category == "termination_poor_performan":
+        if claims_category == "termination_poor_performance":
             costs = "3500"
         elif claims_category == "increase_in_workload":
             costs = "0"
