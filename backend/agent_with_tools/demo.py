@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Union
 from backend.agent_with_tools.schemas import (
     Doc, Case, TimeEstimate, CostBreakdown, CategoryResult
 )
-        from backend.agent_with_tools import create_legal_agent, run_case_analysis
+from backend.agent_with_tools import create_legal_agent, run_case_analysis
 from backend.agent_with_tools.schemas import CaseInput, CaseMetadata
 
 

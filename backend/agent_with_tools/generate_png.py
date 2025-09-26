@@ -26,7 +26,7 @@ def draw_mermaid_png(
     file_type: Literal["jpeg", "png", "webp"] | None = "png",
     max_retries: int = 1,
     retry_delay: float = 1.0,
-    proxies: dict = {"http": "http://localhost:8887", "https": "http://localhost:8887"},
+    proxies: dict | None = None,
 ) -> bytes:
     """Renders Mermaid graph using the Mermaid.INK API."""
 
@@ -56,7 +56,7 @@ def draw_mermaid_png(
     for attempt in range(max_retries + 1):
         try:
             response = requests.get(
-                image_url, proxies=proxies, verify=False, timeout=10
+                image_url, proxies=proxies, timeout=10
             )
             if response.status_code == requests.codes.ok:
                 img_bytes = response.content
@@ -150,7 +150,7 @@ def generate_workflow_png():
             file_type="png",
             max_retries=5,
             retry_delay=2.0,
-            proxies={}  # No proxies
+            proxies=None  # No proxies by default for security
         )
         
         # File is already saved by draw_mermaid_png function
