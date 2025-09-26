@@ -8,6 +8,7 @@ dependencies = [
     "langchain>=0.3.27",
     "numpy>=2.3.3",
     "pandas>=2.3.2",
+    "pyarrow>=21.0.0",
     "scikit-learn>=1.7.2",
     "tqdm>=4.67.1",
     "uvicorn>=0.37.0",

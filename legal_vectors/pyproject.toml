@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "Extracts text from PDFs and stores embeddings in ChromaDB"
 authors = [{ name = "Filippo" }]
 readme = "README.md"
-requires-python = "=3.11.13" # Due to ChromaDB....
+requires-python = "~=3.11.13" # Due to ChromaDB....
 
 [tool.poetry.dependencies]
-python = "=3.11.13"
+python = "~=3.11.13"
 chromadb = "^0.4.22"
 sentence-transformers = "^2.2.2"
 pymupdf = "^1.23.4"
