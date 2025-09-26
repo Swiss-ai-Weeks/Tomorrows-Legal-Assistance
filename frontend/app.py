@@ -4,7 +4,7 @@ import time
 st.set_page_config(
     layout="wide", 
     page_title="Tomorrow's Legal Assistance", 
-    favicon="frontend/media/favicon.ico"
+    page_icon="frontend/media/favicon.ico"
 )
 
 # Custom CSS to make font smaller
