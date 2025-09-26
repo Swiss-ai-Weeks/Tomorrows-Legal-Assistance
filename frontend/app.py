@@ -152,3 +152,4 @@ Provide a report with the following structure in markdown:
         
     st.session_state.messages.append({"role": "assistant", "content": full_response})
     st.rerun()
+    
