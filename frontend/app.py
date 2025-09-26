@@ -1,7 +1,20 @@
 import streamlit as st
 import time
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    layout="wide", 
+    page_title="Tomorrow's Legal Assistance", 
+    favicon="frontend/media/favicon.ico"
+)
+
+# Custom CSS to make font smaller
+st.markdown("""
+<style>
+.stApp { 
+    font-size: 14px; 
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Sidebar for chat management
 with st.sidebar:
