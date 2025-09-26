@@ -17,6 +17,23 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from backend.agent_with_tools import create_legal_agent, CaseInput
 
+# Load environment variables from .env
+def load_env_vars():
+    """Load environment variables from .env file."""
+    env_path = os.path.join(os.path.dirname(__file__), '../../.env')
+    if os.path.exists(env_path):
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    # Remove quotes if present
+                    value = value.strip('"\'')
+                    os.environ[key] = value
+        print(f"✅ Environment variables loaded from {env_path}")
+    else:
+        print(f"⚠️  .env file not found at {env_path}")
+
 def test_rag_integration():
     """Test the agent with real RAG integration."""
     
@@ -25,30 +42,39 @@ def test_rag_integration():
     
     # Test case about employment law
     test_case = CaseInput(
-        case_description="I was terminated from my job without proper notice period. I had a permanent contract and worked there for 3 years. The company claims it was due to restructuring, but I suspect discrimination based on my age (I'm 58 years old). Can I challenge this termination?",
-        user_id="test_user_123"
+        text="I was terminated from my job without proper notice period. I had a permanent contract and worked there for 3 years. The company claims it was due to restructuring, but I suspect discrimination based on my age (I'm 58 years old). Can I challenge this termination?"
     )
     
-    print(f"Testing case: {test_case.case_description[:100]}...")
+    print(f"Testing case: {test_case.text[:100]}...")
     print("-" * 50)
     
     try:
         # Run the analysis
         result = agent.invoke({"case_input": test_case})
         print("Analysis completed successfully!")
-        print(f"Category: {result['final_output'].category}")
-        print(f"Win Likelihood: {result['final_output'].win_likelihood_percent}%")
-        print(f"Time Estimate: {result['final_output'].estimated_time_months} months")
-        print(f"Cost Estimate: CHF {result['final_output'].estimated_cost_chf}")
+        
+        # Extract results from the agent state
+        print(f"✅ Category: {result['category'].category}")
+        print(f"✅ Win Likelihood: {result['likelihood_win']}%")
+        print(f"✅ Time Estimate: {result['time_estimate'].value} {result['time_estimate'].unit}")
+        print(f"✅ Cost Estimate: CHF {result['cost_estimate'].total_chf}")
+        
+        # Check if we have the final AgentOutput
+        if 'result' in result and result['result']:
+            print(f"✅ Final Result Category: {result['result'].category}")
+            print(f"✅ Final Win Likelihood: {result['result'].likelihood_win}%")
+            print(f"✅ Final Time Estimate: {result['result'].estimated_time}")
+            print(f"✅ Final Cost Estimate: {result['result'].estimated_cost}")
+        
+        return True
         
     except Exception as e:
         print(f"Error during analysis: {e}")
         import traceback
         traceback.print_exc()
 
-if __name__ == "__main__":
-    test_rag_integration()
-    
+def test_rag_swiss_law():
+    """Test just the RAG Swiss law retrieval."""
     print("🧪 Testing RAG Swiss Law Integration")
     print("=" * 40)
     
@@ -85,6 +111,12 @@ if __name__ == "__main__":
         print("2. Check GOOGLE_API_KEY environment variable is set")
         print("3. Verify ChromaDB path exists: ./chroma_db")
         return False
+
+
+if __name__ == "__main__":
+    load_env_vars()
+    test_rag_integration()
+    test_rag_swiss_law()
 
 
 def test_full_agent_with_rag():

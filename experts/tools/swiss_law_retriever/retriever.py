@@ -1,7 +1,7 @@
 import os
 import chromadb
 from chromadb.config import Settings
-from google import genai
+import google.generativeai as genai
 from typing import List, Dict, Optional
 
 class LegalRetriever:
@@ -18,7 +18,9 @@ class LegalRetriever:
             collection_name (str): The name of the collection to query.
         """
         # --- Configuration ---
-        self.db_path = "./chroma_db"
+        # Use the chroma_db directory relative to this file's location
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.db_path = os.path.join(current_dir, "chroma_db")
         self.collection_name = collection_name
         
         # --- Configure Gemini API ---
@@ -50,14 +52,15 @@ class LegalRetriever:
             List[float]: The generated vector embedding.
         """
         try:
+            # Configure Gemini API key
+            genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
+            
             # Use the Gemini API to create an embedding for the content.
-            client = genai.Client()
-
-            result = client.models.embed_content(
+            result = genai.embed_content(
                 model=model,
-                contents=text
+                content=text
             )
-            return [embedding.values for embedding in result.embeddings][0]
+            return result['embedding']
         except Exception as e:
             print(f"❌ Error generating embedding for query: {e}")
             # Return a zero vector as a fallback.
