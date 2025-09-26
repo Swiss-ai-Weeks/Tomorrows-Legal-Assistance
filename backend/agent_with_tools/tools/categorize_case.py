@@ -1,5 +1,7 @@
 """Case categorization tool."""
 
+import os
+import logging
 from backend.agent_with_tools.schemas import CategoryResult
 from classifier.classifier_chain import get_classifier_chain
 
@@ -21,7 +23,6 @@ def categorize_case(text: str) -> CategoryResult:
     """
     try:
         # Set the API key in the environment for the classifier
-        import os
         if "APERTUS_API_KEY" in os.environ and "API_KEY" not in os.environ:
             os.environ["API_KEY"] = os.environ["APERTUS_API_KEY"]
         
@@ -56,5 +57,5 @@ def categorize_case(text: str) -> CategoryResult:
         
     except Exception as e:
         # Fallback in case of classifier failure
-        print(f"Classifier failed: {e}, falling back to 'Andere'")
+        logging.error(f"Classifier failed: {e}, falling back to 'Andere'")
         return CategoryResult(category="Andere", confidence=0.50)
