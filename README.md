@@ -152,3 +152,21 @@ cp .env.example .env
 - If you encounter dependency conflicts, try: `uv sync --refresh`
 - To recreate the environment: Remove `.venv` folder and run `uv sync`
 - For UV-specific issues, check the [UV documentation](https://docs.astral.sh/uv/)
+
+## Frontend (Streamlit)
+
+The frontend is a Streamlit application located in the `frontend` directory.
+
+### Running the Frontend
+
+1.  **Install Dependencies**: Ensure you have installed the project dependencies by running the following command in the project's root directory:
+    ```bash
+    uv sync
+    ```
+
+2.  **Run the app**:
+    ```bash
+    streamlit run frontend/app.py
+    ```
+
+The application will open in your web browser.
