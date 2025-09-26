@@ -3,6 +3,7 @@ import time
 import os
 import sys
 import re
+import textwrap
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -83,40 +84,60 @@ if not st.session_state.messages:
 
 # Display chat messages from history
 for message in st.session_state.messages:
-    avatar_path = "media/Gemini_Generated_Image_wl26p8wl26p8wl26.png" if message["role"] == "assistant" else None
+    avatar_path = "media/Gemini_Generated_Image_wl26p8wl26p8wl26_zoomin.png" if message["role"] == "assistant" else None
     with st.chat_message(message["role"], avatar=avatar_path):
         st.markdown(message["content"])
 
 # Accept user input
 if prompt := st.chat_input("What is your legal question?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    st.rerun()
 
-    # Generate title after first user message
+# Main logic for processing user input
+if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+    prompt = st.session_state.messages[-1]["content"]
+
+    # Step 1: Generate Title (if not exists) and rerun
     if "chat_title" not in st.session_state:
         api_key = os.environ.get("APERTUS_API_KEY")
         if api_key:
             with st.spinner("Generating title..."):
                 try:
                     llm = LangchainApertus(api_key=api_key)
-                    title_prompt = f"Based on the following user query, generate a short, descriptive title for the conversation with max 5 words. The user query is: '{prompt}'"
+                    title_prompt = f"""You are an expert title generator. Your mission is to create a concise, filename-safe title from a user's query.
+
+                    ### Your Instructions
+                    1.  **Word Count:** The title MUST be 5 words or less.
+                    2.  **Content:** Your response MUST contain ONLY the words of the title.
+                    3.  **Formatting:** The title MUST be plain text, free of quotation marks or any prefixes like "Title:".
+                    4.  **No Commentary:** You MUST NOT add any notes or explanations. Your entire response is the title.
+                    5.  **Punctuation:** The title MUST end with a word, not with any punctuation like a question mark or period.
+
+                    ### Example
+                    Query: "I received a speeding ticket for 500 CHF, can I fight it?"
+                    Title: Contesting a 500 CHF Speeding Ticket
+
+                    ### Task
+                    Query: '{prompt}'
+                    Title:"""
                     response = llm.invoke(title_prompt)
-                    st.session_state.chat_title = response.content
+                    clean_title = response.content.strip().split('\n')[0]
+
+                    st.session_state.chat_title = clean_title
+                    st.rerun() # Rerun to display title and move to analysis step
                 except Exception as e:
                     st.error(f"Could not generate title: {e}")
         else:
             st.warning("APERTUS_API_KEY not set. Cannot generate title.")
-
-    # Display assistant response
-    with st.chat_message("assistant", avatar="media/Gemini_Generated_Image_wl26p8wl26p8wl26.png"):
+    
+    # Step 2: Generate and display assistant response
+    with st.chat_message("assistant", avatar="media/Gemini_Generated_Image_wl26p8wl26p8wl26_zoomin.png"):
         message_placeholder = st.empty()
         full_response = ""
         
         api_key = os.environ.get("APERTUS_API_KEY")
         if not api_key:
             st.warning("APERTUS_API_KEY not set. Cannot get analysis.")
-            # Stop execution if the key is not available.
             st.stop()
 
         with st.spinner("Analyzing your situation..."):
@@ -130,6 +151,7 @@ The user's situation is:
 
 ### Response
 Provide a report with the following structure in markdown:
+**IMPORTANT**: Always place a blank line before starting any list.
 - **Likelihood of Winning:** (Provide a percentage)
 - **Estimated Cost Range:** (Provide a range in CHF)
 - **Estimated Timeframe:** (Provide an estimated duration)
@@ -138,12 +160,19 @@ Provide a report with the following structure in markdown:
 '''
                 response = llm.invoke(analysis_prompt)
                 response_text = response.content
+                # This removes common leading whitespace that causes
+                # Markdown to be rendered as a code block.
+                processed_text = textwrap.dedent(response_text)
+                
+                # FIX: Ensure a blank line exists between headings and lists
+                processed_text = re.sub(r'([^\n])\n(\s*[\*\-]\s)', r'\1\n\n\2', response_text)
 
             except Exception as e:
                 st.error(f"Failed to get analysis from Apertus: {e}")
                 st.stop()
 
-        lines = response_text.split('\n')
+        # Use the processed_text for streaming
+        lines = processed_text.split('\n')
         for line in lines:
             full_response += line + "\n"
             time.sleep(0.05)
