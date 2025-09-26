@@ -3,72 +3,12 @@
 import re
 from typing import Dict, Any, Union
 from backend.agent_with_tools.schemas import CostBreakdown, TimeEstimate
-
-
-# Category mapping from German agent categories to English estimator categories  
-CATEGORY_MAPPING = {
-    "Arbeitsrecht": "employment_law",
-    "Strafverkehrsrecht": "traffic_criminal_law",
-    "Immobilienrecht": "real_estate_law",  # Not in estimator yet, will use fallback
-    "Andere": "other"  # Not in estimator yet, will use fallback
-}
-
-# Employment law subcategories mapping (same as in estimate_time.py)
-EMPLOYMENT_SUBCATEGORIES = {
-    "termination": "termination_poor_performance",
-    "dismissal": "fristlose_kuendigung", 
-    "salary": "lohn_ausstehend",
-    "illness": "kuendigung_waehrend_krankheit_unfall",
-    "workload": "increase_in_workload",
-    "default": "termination_poor_performance"
-}
-
-# Traffic law subcategories mapping
-TRAFFIC_SUBCATEGORIES = {
-    "speeding": "moderate_speeding",
-    "alcohol": "driving_under_influence_alcohol_license_withdrawal",
-    "parking": "parking_lot_accident_chf_2500_no_witnesses", 
-    "fine": "parking_fine_expired_few_minutes",
-    "penalty": "alcohol_06_penalty_order",
-    "default": "moderate_speeding"
-}
-
-
-def _extract_subcategory(case_text: str, category: str) -> str:
-    """Extract subcategory from case text based on keywords."""
-    if not case_text:
-        return "default"
-    
-    case_lower = case_text.lower()
-    
-    if category == "employment_law":
-        if any(word in case_lower for word in ["salary", "wage", "pay", "lohn"]):
-            return "lohn_ausstehend"
-        elif any(word in case_lower for word in ["illness", "sick", "krankheit", "unfall"]):
-            return "kuendigung_waehrend_krankheit_unfall"
-        elif any(word in case_lower for word in ["dismissal", "fired", "fristlos"]):
-            return "fristlose_kuendigung"
-        elif any(word in case_lower for word in ["workload", "overtime", "work hours"]):
-            return "increase_in_workload" 
-        else:
-            return "termination_poor_performance"
-    
-    elif category == "traffic_criminal_law":
-        if any(word in case_lower for word in ["alcohol", "drunk", "dui"]):
-            return "driving_under_influence_alcohol_license_withdrawal"
-        elif any(word in case_lower for word in ["parking", "parked"]):
-            if "accident" in case_lower:
-                return "parking_lot_accident_chf_2500_no_witnesses"
-            else:
-                return "parking_fine_expired_few_minutes"
-        elif any(word in case_lower for word in ["speeding", "speed", "fast"]):
-            return "moderate_speeding"
-        elif any(word in case_lower for word in ["penalty", "fine"]):
-            return "alcohol_06_penalty_order"
-        else:
-            return "moderate_speeding"
-    
-    return "default"
+from backend.agent_with_tools.tools.estimator_constants import CATEGORY_MAPPING
+from backend.agent_with_tools.tools.estimator_utils import (
+    extract_subcategory, 
+    normalize_time_estimate, 
+    get_case_text_from_inputs
+)
 
 
 def _parse_cost_string(cost_str: str, time_estimate: TimeEstimate = None) -> CostBreakdown:
@@ -147,12 +87,7 @@ def _parse_cost_string(cost_str: str, time_estimate: TimeEstimate = None) -> Cos
 def _calculate_fallback_cost(inputs: Dict[str, Any]) -> CostBreakdown:
     """Calculate fallback cost when estimator doesn't have data."""
     time_estimate = inputs.get("time_estimate", {})
-    if isinstance(time_estimate, TimeEstimate):
-        time_val = time_estimate.value
-        time_unit = time_estimate.unit
-    else:
-        time_val = time_estimate.get("value", 6)
-        time_unit = time_estimate.get("unit", "months")
+    time_val, time_unit = normalize_time_estimate(time_estimate)
     
     hourly_rates = inputs.get("hourly_rates", {})
     lawyer_rate = hourly_rates.get("lawyer", 400)  # CHF per hour
@@ -210,7 +145,7 @@ def estimate_cost(inputs: Dict[str, Any]) -> Union[float, CostBreakdown]:
     
     # Try to get category from inputs or use fallback calculation
     category = inputs.get("category")
-    case_text = inputs.get("case_text", "")
+    case_text = get_case_text_from_inputs(inputs)
     
     if not category:
         # Use fallback cost calculation
@@ -225,7 +160,7 @@ def estimate_cost(inputs: Dict[str, Any]) -> Union[float, CostBreakdown]:
         return _calculate_fallback_cost(inputs)
     
     # Extract subcategory from case text
-    subcategory = _extract_subcategory(case_text, english_category)
+    subcategory = extract_subcategory(case_text, english_category)
     
     # Call the actual estimator function
     try:
