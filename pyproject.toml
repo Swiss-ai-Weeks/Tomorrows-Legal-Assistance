@@ -16,4 +16,6 @@ dependencies = [
     "transformers>=4.56.2",
     "uvicorn>=0.37.0",
     "streamlit==1.50.0",
+    "langgraph>=0.6.7",
+    "langchain-openai>=0.3.33",
 ]
