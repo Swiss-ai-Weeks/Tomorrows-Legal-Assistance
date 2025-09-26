@@ -88,7 +88,7 @@ def test_agent_endpoint(base_url="http://localhost:8000"):
                 f"{base_url}/api/agent_with_tools",
                 json=test_case['data'],
                 headers={"Content-Type": "application/json"},
-                timeout=90  # Allow up to 90 seconds for analysis (RAG is slow)
+                timeout=90  # Allow up to 90 seconds for complete legal analysis
             )
             
             if response.status_code == 200:
@@ -107,7 +107,7 @@ def test_agent_endpoint(base_url="http://localhost:8000"):
                 print(f"Error: {response.text}")
                 
         except requests.exceptions.Timeout:
-            print("⏰ Request timed out (took more than 60 seconds)")
+            print("⏰ Request timed out (took more than 90 seconds)")
         except requests.exceptions.ConnectionError:
             print("🔌 Connection error - is the server running?")
         except Exception as e:
