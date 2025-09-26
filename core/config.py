@@ -12,8 +12,11 @@ class _Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=ENV_PATH, env_file_encoding="utf-8", extra="ignore")
 
-    # Apertus Configuration
+    # Apertus API Configuration
     APERTUS_API_KEY: str
+    
+    # Google API Configuration  
+    GOOGLE_API_KEY: str
 
 
 settings = _Settings()  # pyright: ignore[reportCallIssue]

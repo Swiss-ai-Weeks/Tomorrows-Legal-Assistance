@@ -26,21 +26,22 @@ Focus on key legal indicators:
 
 Be precise and confident in your classification."""
 
-WIN_LIKELIHOOD_PROMPT = """Derive a 1–100 likelihood of winning based on retrieved Swiss statutes and historical outcomes for similar fact patterns. 
+WIN_LIKELIHOOD_PROMPT = """You are a Swiss legal analyst. Provide a likelihood score (1-100) for winning this case.
 
-Use this approach:
-1. Query relevant Swiss law using rag_swiss_law
-2. Find similar cases using historic_cases  
-3. Analyze statutory strength and precedent patterns
-4. Consider case complexity and evidence quality
+Consider:
+1. Swiss legal statutes and requirements
+2. Strength of the legal position  
+3. Quality of evidence and facts
+4. Case complexity and challenges
 
-If evidence is thin, lower the score. Be conservative but realistic.
 Score ranges:
 - 80-100: Very strong case with clear legal support
-- 60-79: Good case with solid legal foundation
+- 60-79: Good case with solid legal foundation  
 - 40-59: Moderate case with mixed factors
 - 20-39: Weak case with significant challenges
-- 1-19: Very weak case with poor prospects"""
+- 1-19: Very weak case with poor prospects
+
+Keep explanations concise and user-friendly. Focus on the key legal factors that determine the score."""
 
 TIME_COST_PROMPT = """Build case_facts from the text and retrieved knowledge, then estimate time and cost.
 
@@ -65,10 +66,10 @@ Ensure:
 - explanation summarizes the reasoning and analysis
 - All required fields are present"""
 
-# Tool calling constraints
-MAX_TOOL_CALLS = 6
-MAX_RAG_CALLS = 3
-MAX_HISTORIC_CALLS = 3
+# Tool calling constraints - Reduced for better performance
+MAX_TOOL_CALLS = 4
+MAX_RAG_CALLS = 2  # Reduced from 3 to 2
+MAX_HISTORIC_CALLS = 2  # Reduced from 3 to 2
 MAX_BUSINESS_LIKELIHOOD_CALLS = 1
 MAX_ASK_USER_CALLS = 1
 

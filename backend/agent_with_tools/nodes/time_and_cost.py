@@ -1,7 +1,7 @@
 """Time and cost estimation node."""
 
 from langchain_core.messages import HumanMessage, SystemMessage
-from backend.agent_with_tools.schemas import AgentState, TimeEstimate, CostBreakdown
+from backend.agent_with_tools.schemas import AgentState, TimeEstimate
 from backend.agent_with_tools.tools.rag_swiss_law import rag_swiss_law
 from backend.agent_with_tools.tools.historic_cases import historic_cases
 from backend.agent_with_tools.tools.estimate_time import estimate_time
@@ -162,13 +162,7 @@ def time_and_cost_node(state: AgentState, llm) -> AgentState:
         vat = subtotal * DEFAULT_VAT_RATE
         total = subtotal + vat
         
-        state.cost_estimate = CostBreakdown(
-            total_chf=total,
-            breakdown={
-                "lawyer_fees": lawyer_cost,
-                "court_fees": court_fees,
-                "vat": vat
-            }
-        )
+        # Store as simple total for string formatting later
+        state.cost_estimate = total
     
     return state

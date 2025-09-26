@@ -5,6 +5,18 @@ import os
 from typing import List
 from backend.agent_with_tools.schemas import Doc
 
+# Ensure environment variables are set from settings
+try:
+    from core.config import settings
+    # Set environment variables if not already set
+    if not os.environ.get("GOOGLE_API_KEY"):
+        os.environ["GOOGLE_API_KEY"] = settings.GOOGLE_API_KEY
+    if not os.environ.get("APERTUS_API_KEY"):
+        os.environ["APERTUS_API_KEY"] = settings.APERTUS_API_KEY
+except ImportError:
+    # Fallback if settings not available
+    pass
+
 # Add experts directory to path to import the retriever
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 experts_path = os.path.join(project_root, "experts", "tools", "swiss_law_retriever")

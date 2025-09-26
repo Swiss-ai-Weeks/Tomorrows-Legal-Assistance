@@ -40,7 +40,7 @@ chat_history:
 """
     )
     
-    llm = LangchainApertus(api_key=os.environ["API_KEY"], temperature=0)
+    llm = LangchainApertus(api_key=os.environ["APERTUS_API_KEY"], temperature=0)
 
     return prompt_template | llm | JsonOutputParser()
 

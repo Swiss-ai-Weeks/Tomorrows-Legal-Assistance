@@ -65,20 +65,21 @@ def aggregate_node(state: AgentState) -> AgentState:
     else:
         time_str = f"{time_val} {time_unit}"
     
-    # Normalize cost estimate
+    # Normalize cost estimate to string format
     if isinstance(state.cost_estimate, (int, float)):
-        cost_output = state.cost_estimate
+        cost_output = f"{int(state.cost_estimate)} CHF"
     elif isinstance(state.cost_estimate, CostBreakdown):
-        cost_output = state.cost_estimate
+        cost_output = f"{int(state.cost_estimate.total_chf)} CHF"
     else:
         # Handle dict format from fallback estimation
         if hasattr(state.cost_estimate, 'total_chf'):
-            cost_output = state.cost_estimate.total_chf
+            cost_output = f"{int(state.cost_estimate.total_chf)} CHF"
         else:
-            cost_output = float(state.cost_estimate)
+            cost_output = f"{int(float(state.cost_estimate))} CHF"
     
-    # Ensure likelihood_win is within valid range
-    likelihood = max(1, min(100, state.likelihood_win))
+    # Ensure likelihood_win is within valid range and format as percentage string
+    likelihood_num = max(1, min(100, state.likelihood_win))
+    likelihood = f"{likelihood_num}%"
     
     # Compile explanation from all analysis parts
     explanation = ""
