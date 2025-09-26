@@ -6,34 +6,76 @@ A LangGraph-based ReAct agent for analyzing Swiss legal cases. This agent ingest
 
 - **Case Classification**: Automatically categorizes cases into: Arbeitsrecht, Immobilienrecht, Strafverkehrsrecht, or Andere
 - **Win Likelihood Analysis**: Uses RAG retrieval of Swiss law and historic cases to estimate success probability (1-100)
-- **Time & Cost Estimation**: Provides realistic time estimates and cost breakdowns
+- **Time & Cost Estimation**: Provides realistic time estimates and cost breakdowns  
 - **ReAct Processing**: Step-by-step reasoning with tool usage for transparent decision making
-- **Parallel Analysis**: Simultaneous processing of different analysis branches for efficiency
+- **Conditional Analysis**: Smart workflow that skips analysis for unsupported categories
+- **Business Logic Baseline**: Integrated likelihood estimation with explanations for transparency
 
 ## Architecture
 
-The agent follows a LangGraph-based workflow:
+The agent follows a LangGraph-based workflow with conditional branching:
 
 ```
-Input → Ingest → Categorize → [Win Likelihood Analysis | Time & Cost Analysis] → Aggregate → Output
+Input → Ingest → Categorize → Conditional → [Full Analysis | Category Only] → Output
+```
+
+### Graph Flow Diagram
+```mermaid
+graph TD
+    Start([Start]) --> Ingest[🔧 Ingest Node<br/>Normalize Input & Initialize Memory]
+    Ingest --> Categorize[🏷️ Categorize Node<br/>Classify Case into Legal Category]
+    
+    %% Conditional branching based on category
+    Categorize --> Decision{Category = 'Andere'?}
+    Decision -->|Yes| AggregateSkip[📊 Aggregate Node<br/>Return Category Only<br/>No Estimations]
+    Decision -->|No| WinLikelihood[🎯 Win Likelihood Node<br/>ReAct Analysis with RAG & Historic Cases]
+    
+    %% Main analysis flow
+    WinLikelihood --> TimeCost[⏱️💰 Time & Cost Node<br/>Business Logic Estimation]
+    TimeCost --> AggregateFull[📊 Aggregate Node<br/>Validate & Format Full Results]
+    
+    %% Both paths end
+    AggregateSkip --> End([End])
+    AggregateFull --> End
 ```
 
 ### Nodes
 
 1. **Ingest**: Normalizes input and initializes working memory
-2. **Categorize**: Classifies cases using ML/business logic with user fallback  
-3. **Win Likelihood**: ReAct analysis using Swiss law RAG and historic cases
-4. **Time & Cost**: Parallel estimation using business logic tools
-5. **Aggregate**: Validates and formats final JSON output
+2. **Categorize**: Classifies cases using ML/business logic with user fallback (92%+ confidence)
+3. **Win Likelihood**: ReAct analysis using Swiss law RAG, historic cases, and business logic baseline
+4. **Time & Cost**: Business logic estimation with Swiss legal fee structures  
+5. **Aggregate**: Validates and formats final JSON output with explanation compilation
+
+### Conditional Logic
+- **Regular Categories** (Arbeitsrecht, Immobilienrecht, Strafverkehrsrecht): Full analysis pipeline
+- **'Andere' Category**: Direct to output, skipping time/cost estimation (returns null values)
 
 ### Tools (Plug-and-Play)
 
-- `rag_swiss_law()`: Retrieve relevant Swiss statutes and regulations
-- `historic_cases()`: Find similar precedent cases with outcomes  
-- `estimate_time()`: Calculate time estimates based on case complexity
-- `estimate_cost()`: Generate cost breakdowns including fees and VAT
-- `categorize_case()`: ML-powered case classification
-- `ask_user()`: UI callback for missing information
+- `rag_swiss_law()`: Retrieve relevant Swiss statutes and regulations via Chroma + Gemini embeddings
+- `historic_cases()`: Find similar precedent cases with outcomes from case database
+- `estimate_time()`: Calculate time estimates based on case complexity and Swiss legal procedures
+- `estimate_cost()`: Generate cost breakdowns including lawyer fees, court fees, and VAT
+- `categorize_case()`: ML-powered case classification with confidence scoring
+- `ask_user()`: UI callback for missing information and clarifications
+- `estimate_business_likelihood()`: **NEW** - Business logic baseline likelihood estimation with explanations
+
+### Business Logic Integration
+
+The agent now includes integrated business logic likelihood estimation that provides baseline guidance:
+
+#### Supported Categories & Mapping
+| German Category | English Category | Business Logic Support |
+|-----------------|------------------|----------------------|
+| Arbeitsrecht | employment_law | ✅ Fully Supported |
+| Strafverkehrsrecht | traffic_criminal_law | ✅ Fully Supported |
+| Immobilienrecht | real_estate_law | ⚠️ Fallback only |
+| Andere | other | ⚠️ Fallback only |
+
+#### Subcategory Detection
+- **Employment Law**: Salary issues (100%), illness termination (100%), immediate dismissal (80%), workload issues (0%), general termination (20%)
+- **Traffic Criminal Law**: DUI/Alcohol (<10%), moderate speeding (10-15%), parking accidents (50-60%), parking fines (<10%)
 
 ## Usage
 
@@ -71,7 +113,9 @@ result = run_case_analysis({
 })
 
 # Output format
+```python
 {
+    "category": "Arbeitsrecht",
     "likelihood_win": 75,
     "estimated_time": "6 months", 
     "estimated_cost": {
@@ -81,8 +125,21 @@ result = run_case_analysis({
             "court_fees": 2000.0,
             "vat": 1000.0
         }
-    }
+    },
+    "explanation": "Combined business logic baseline (20%) with case-specific factors..."
 }
+```
+
+### 'Andere' Category Output
+```python
+{
+    "category": "Andere",
+    "likelihood_win": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "explanation": "Case classified as 'Andere' - no analysis available for this category"
+}
+```
 ```
 
 ## Installation & Dependencies
@@ -125,9 +182,11 @@ export API_KEY="your-apertus-api-key"
 
 ```python
 {
-    "likelihood_win": "int (1-100)",     # Win probability
-    "estimated_time": "string",          # Human-readable duration
-    "estimated_cost": "number|object"    # Cost in CHF or breakdown
+    "category": "string",                      # Legal case category (always present)
+    "likelihood_win": "int (1-100) | null",   # Win probability (null for 'Andere')
+    "estimated_time": "string | null",        # Human-readable duration (null for 'Andere')
+    "estimated_cost": "number|object | null", # Cost in CHF or breakdown (null for 'Andere')
+    "explanation": "string"                    # Reasoning explanation (always present)
 }
 ```
 
@@ -167,38 +226,6 @@ def rag_swiss_law(query: str, top_k: int = 5):
     return search_swiss_law_db(query, top_k)
 ```
 
-## Development Status
-
-- ✅ Core LangGraph workflow implemented
-- ✅ Schema validation and type safety
-- ✅ ReAct prompts and policies defined
-- ✅ Smoke tests passing
-- ⚠️ Tool implementations are stubs
-- ⚠️ Requires LangGraph installation
-- ⚠️ Needs API key for full testing
-
-## Integration Notes
-
-### RAG Team
-- Implement `rag_swiss_law()` with Chroma vector store
-- Use Gemini embeddings for Swiss law documents
-- Return structured `Doc` objects
-
-### Business Logic Team  
-- Implement `estimate_time()` and `estimate_cost()` functions
-- Accept structured `CaseFacts` input
-- Return typed results per schema
-
-### UI Team
-- Implement `ask_user()` callback for missing information
-- Handle user interaction flow for clarifications
-- Parse and validate user responses
-
-### Backend Integration
-- Add agent endpoint to FastAPI routes
-- Handle async execution and progress tracking
-- Implement proper error handling and logging
-
 ## Example Cases
 
 The agent handles various Swiss legal scenarios:
@@ -234,10 +261,17 @@ The agent handles various Swiss legal scenarios:
 - **Caching**: Consider caching RAG results for similar queries
 - **Error Handling**: Graceful fallbacks when tools are unavailable
 
-## Contributing
+## Development Conventions
 
-1. Follow existing code structure and patterns
-2. Add type hints and docstrings
-3. Update tests for new functionality  
-4. Document any new tools or configurations
-5. Ensure compliance with Swiss legal accuracy requirements
+### Modular Structure
+- **`graph.py`**: Defines the main LangGraph workflow
+- **`nodes/`**: Each file corresponds to a logical step (node) in the graph
+- **`tools/`**: Each file implements a specific capability (RAG, cost estimation, etc.)
+- **`schemas.py`**: Centralizes all Pydantic data models for state and inputs/outputs
+- **`policies.py`**: Contains all prompts, system messages, and business rule constants
+
+### Key Technologies
+- **Orchestration**: `langgraph`
+- **LLM**: `Apertus LLM` (Swiss AI model)
+- **Data Validation**: `pydantic`
+- **RAG Backend**: ChromaDB vector store with Gemini embeddings
