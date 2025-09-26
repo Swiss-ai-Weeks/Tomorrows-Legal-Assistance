@@ -1,7 +1,20 @@
 import streamlit as st
 import time
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    layout="wide", 
+    page_title="Tomorrow's Legal Assistance", 
+    page_icon="frontend/media/favicon.ico"
+)
+
+# Custom CSS to make font smaller
+st.markdown("""
+<style>
+.stApp { 
+    font-size: 14px; 
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Sidebar for chat management
 with st.sidebar:
@@ -70,9 +83,10 @@ Here is a preliminary analysis of your situation:
             response_text += f"- {step}\n"
 
         # Simulate stream of response with milliseconds delay
-        for chunk in response_text.split():
-            full_response += chunk + " "
-            time.sleep(0.05)
+        lines = response_text.split('\n')
+        for line in lines:
+            full_response += line + "\n"
+            time.sleep(0.1)
             # Add a blinking cursor to simulate typing
             message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
