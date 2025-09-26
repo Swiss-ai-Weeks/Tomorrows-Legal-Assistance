@@ -83,7 +83,8 @@ if not st.session_state.messages:
 
 # Display chat messages from history
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
+    avatar_path = "media/Gemini_Generated_Image_wl26p8wl26p8wl26.png" if message["role"] == "assistant" else None
+    with st.chat_message(message["role"], avatar=avatar_path):
         st.markdown(message["content"])
 
 # Accept user input
@@ -102,7 +103,6 @@ if prompt := st.chat_input("What is your legal question?"):
                     title_prompt = f"Based on the following user query, generate a short, descriptive title for the conversation with max 5 words. The user query is: '{prompt}'"
                     response = llm.invoke(title_prompt)
                     st.session_state.chat_title = response.content
-                    st.rerun()
                 except Exception as e:
                     st.error(f"Could not generate title: {e}")
         else:
@@ -112,37 +112,43 @@ if prompt := st.chat_input("What is your legal question?"):
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
-        mock_response = {
-            "likelihood_of_winning": "75%",
-            "cost_range": "CHF 2,000 - CHF 5,000",
-            "timeframe": "3-6 months",
-            "next_steps": [
-                "Consult with a specialized lawyer.",
-                "Gather all relevant documentation.",
-                "Prepare a detailed timeline of events."
-            ],
-            "reasoning": "Based on the provided information, the case appears to have a strong foundation. However, the outcome depends on the quality of evidence presented."
-        }
-        response_text = f"""### Legal Analysis Report
+        
+        api_key = os.environ.get("APERTUS_API_KEY")
+        if not api_key:
+            st.warning("APERTUS_API_KEY not set. Cannot get analysis.")
+            # Stop execution if the key is not available.
+            st.stop()
 
-Here is a preliminary analysis of your situation:
+        with st.spinner("Analyzing your situation..."):
+            try:
+                llm = LangchainApertus(api_key=api_key)
+                analysis_prompt = f'''### Instruction
+You are a helpful legal assistant. Analyze the user's situation and provide a preliminary analysis report.
 
-- **Likelihood of Winning:** {mock_response['likelihood_of_winning']}
-- **Estimated Cost Range:** {mock_response['cost_range']}
-- **Estimated Timeframe:** {mock_response['timeframe']}
+The user's situation is:
+'{prompt}'
 
-#### Reasoning:
-{mock_response['reasoning']}
+### Response
+Provide a report with the following structure in markdown:
+- **Likelihood of Winning:** (Provide a percentage)
+- **Estimated Cost Range:** (Provide a range in CHF)
+- **Estimated Timeframe:** (Provide an estimated duration)
+- **Reasoning:** (Explain your reasoning)
+- **Recommended Next Steps:** (Provide a bulleted list of actions)
+'''
+                response = llm.invoke(analysis_prompt)
+                response_text = response.content
 
-#### Recommended Next Steps:
-"""
-        for step in mock_response['next_steps']:
-            response_text += f"- {step}\n"
+            except Exception as e:
+                st.error(f"Failed to get analysis from Apertus: {e}")
+                st.stop()
 
         lines = response_text.split('\n')
         for line in lines:
             full_response += line + "\n"
-            time.sleep(0.1)
+            time.sleep(0.05)
             message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
+        
     st.session_state.messages.append({"role": "assistant", "content": full_response})
+    st.rerun()
