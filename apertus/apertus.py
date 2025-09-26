@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 
 
 APERTUS_MODEL_NAME = "swiss-ai/Apertus-70B"
-APERTUS_BASE_URL = https://api.swisscom.com/layer/swiss-ai-weeks/apertus-70b/v1
+APERTUS_BASE_URL = "https://api.swisscom.com/layer/swiss-ai-weeks/apertus-70b/v1"
 
 
 class OpenaiApertus(OpenAI):
@@ -27,3 +27,9 @@ class LangchainApertus(ChatOpenAI):
             base_url=APERTUS_BASE_URL,
             **kwargs,
         )
+
+
+if __name__ == "__main__":
+    import os
+    llm = LangchainApertus(api_key=os.environ.get("API_KEY"))
+    print(llm.invoke("Hello world!"))
