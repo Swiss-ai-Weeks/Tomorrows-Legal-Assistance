@@ -102,3 +102,8 @@ The `legal_vectors` component handles the creation and querying of the legal doc
 *   **API**: The FastAPI application in `backend/` contains the core API logic. New endpoints should be added in `backend/api/routes.py`.
 *   **Vectorization**: The logic for creating and querying the vector store is located in the `legal_vectors/legal_vectorizer/` directory.
 *   **Configuration**: The backend can be configured using environment variables defined in a `.env` file (copied from `.env.example`).
+
+
+## Frontend (Streamlit)
+
+The frontend is a Streamlit application located in the `frontend` directory.
