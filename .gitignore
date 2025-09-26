@@ -133,4 +133,10 @@ tmp/
 # Data files (keep structure but ignore actual data)
 # data/*.parquet  # Uncomment if you want to ignore data files
 
+# Chroma database files
+chroma_db/
+**/chroma_db/
+*.sqlite3
+chroma.sqlite3
+
 *.code-workspace
