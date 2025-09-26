@@ -131,7 +131,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             st.warning("APERTUS_API_KEY not set. Cannot generate title.")
     
     # Step 2: Generate and display assistant response
-    with st.chat_message("assistant", avatar="media/Gemini_Generated_Image_wl26p8wl26p8wl26.png"):
+    with st.chat_message("assistant", avatar="media/Gemini_Generated_Image_wl26p8wl26p8wl26_zoomin.png"):
         message_placeholder = st.empty()
         full_response = ""
         
