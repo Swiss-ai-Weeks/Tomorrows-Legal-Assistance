@@ -2,10 +2,41 @@
 API routes for the legal assistance application.
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
+from backend.agent_with_tools.graph import create_legal_agent
+from backend.agent_with_tools.schemas import CaseInput, AgentOutput
+from core.config import settings
+
 
 router = APIRouter()
+
+@router.post("/agent_with_tools", response_model=AgentOutput)
+async def run_agent(case_input: CaseInput) -> AgentOutput:
+    """
+    Run the legal analysis agent on a given case.
+    """
+    try:
+        # Create the agent, passing the API key from settings
+        agent = create_legal_agent(api_key=settings.APERTUS_API_KEY)
+
+        # Prepare the initial state for the agent
+        initial_state = {"case_input": case_input}
+
+        # Invoke the agent
+        final_state = agent.invoke(initial_state)
+
+        # The agent's final output is stored in the 'result' field of the state
+        analysis_result = final_state.get("result")
+
+        if not analysis_result:
+            raise HTTPException(status_code=500, detail="Agent failed to produce a result.")
+
+        return analysis_result
+    except Exception as e:
+        # Catch potential errors during agent execution
+        raise HTTPException(status_code=500, detail=f"An error occurred during agent execution: {str(e)}")
+
 
 @router.get("/")
 async def api_root() -> Dict[str, str]:
