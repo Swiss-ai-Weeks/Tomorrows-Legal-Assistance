@@ -13,7 +13,20 @@ def aggregate_node(state: AgentState) -> AgentState:
     Returns:
         Updated state with validated final result
     """
-    # Validate that we have all required components
+    # Get category from state
+    category = state.category.category if state.category else "Unknown"
+    
+    # Handle 'Andere' category - no estimations possible
+    if category == "Andere":
+        state.result = AgentOutput(
+            category=category,
+            likelihood_win=None,
+            estimated_time=None,
+            estimated_cost=None
+        )
+        return state
+    
+    # Validate that we have all required components for other categories
     if not state.likelihood_win:
         raise ValueError("Missing likelihood_win score")
     
@@ -60,8 +73,9 @@ def aggregate_node(state: AgentState) -> AgentState:
     # Ensure likelihood_win is within valid range
     likelihood = max(1, min(100, state.likelihood_win))
     
-    # Create final output
+    # Create final output with all fields
     state.result = AgentOutput(
+        category=category,
         likelihood_win=likelihood,
         estimated_time=time_str,
         estimated_cost=cost_output

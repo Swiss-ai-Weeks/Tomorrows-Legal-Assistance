@@ -228,7 +228,10 @@ def demo_employment_case():
             print("\n🎯 Final Output:")
             output = result["result"].model_dump()
             for key, value in output.items():
-                print(f"   {key}: {value}")
+                if value is not None:
+                    print(f"   {key}: {value}")
+                else:
+                    print(f"   {key}: null (not available for this category)")
         
         print(f"\n🔧 Tool Calls Used: {result.get('tool_call_count', 0)}")
         
@@ -254,54 +257,82 @@ def demo_mock_analysis():
     """Show mock analysis results without running the full agent."""
     print("🧪 Mock Analysis Demo (No Dependencies Required)\n")
     
-    # Demo case
+    # Demo case - employment
     case_text = "Employment termination dispute with insufficient notice period"
-    
-    print(f"📝 Case: {case_text}")
+    print(f"📝 Case 1: {case_text}")
     print()
     
     # Mock categorization
     category = MockTools.mock_categorize_case(case_text)
     print(f"🏷️  Category: {category.category} (confidence: {category.confidence:.1%})")
     
-    # Mock case facts
-    case_facts = {
-        "category": category.category,
-        "complexity": "medium", 
-        "court_level": "district"
-    }
+    if category.category != "Andere":
+        # Mock case facts
+        case_facts = {
+            "category": category.category,
+            "complexity": "medium", 
+            "court_level": "district"
+        }
+        
+        # Mock time estimate
+        time_est = MockTools.mock_estimate_time(case_facts)
+        print(f"⏱️  Time Estimate: {time_est.value} {time_est.unit}")
+        
+        # Mock cost estimate
+        cost_inputs = {
+            "time_estimate": {"value": time_est.value, "unit": time_est.unit},
+            "hourly_rates": {"lawyer": 400},
+            "vat_rate": 0.077
+        }
+        cost_est = MockTools.mock_estimate_cost(cost_inputs)
+        
+        print(f"💰 Cost Estimate: CHF {cost_est.total_chf:,.2f}")
+        if cost_est.breakdown:
+            print("   Breakdown:")
+            for item, amount in cost_est.breakdown.items():
+                print(f"     {item}: CHF {amount:,.2f}")
+        
+        # Mock win likelihood (simplified)
+        win_likelihood = 72  # Would be calculated by LLM + RAG
+        
+        print(f"🎯 Win Likelihood: {win_likelihood}%")
+        
+        print("\n📊 Final Analysis Result:")
+        final_result = {
+            "category": category.category,
+            "likelihood_win": win_likelihood,
+            "estimated_time": f"{time_est.value} {time_est.unit}",
+            "estimated_cost": cost_est.total_chf
+        }
+        
+        for key, value in final_result.items():
+            print(f"   {key}: {value}")
+    else:
+        print("ℹ️  No estimations available for 'Andere' category")
+        print("\n📊 Final Analysis Result:")
+        final_result = {
+            "category": category.category,
+            "likelihood_win": None,
+            "estimated_time": None,
+            "estimated_cost": None
+        }
+        for key, value in final_result.items():
+            print(f"   {key}: {value}")
     
-    # Mock time estimate
-    time_est = MockTools.mock_estimate_time(case_facts)
-    print(f"⏱️  Time Estimate: {time_est.value} {time_est.unit}")
-    
-    # Mock cost estimate
-    cost_inputs = {
-        "time_estimate": {"value": time_est.value, "unit": time_est.unit},
-        "hourly_rates": {"lawyer": 400},
-        "vat_rate": 0.077
-    }
-    cost_est = MockTools.mock_estimate_cost(cost_inputs)
-    
-    print(f"💰 Cost Estimate: CHF {cost_est.total_chf:,.2f}")
-    if cost_est.breakdown:
-        print("   Breakdown:")
-        for item, amount in cost_est.breakdown.items():
-            print(f"     {item}: CHF {amount:,.2f}")
-    
-    # Mock win likelihood (simplified)
-    win_likelihood = 72  # Would be calculated by LLM + RAG
-    
-    print(f"🎯 Win Likelihood: {win_likelihood}%")
-    
+    # Demo 'Andere' case
+    print("\n" + "-" * 40)
+    print("📝 Case 2: Complex constitutional law question about digital privacy")
+    andere_category = CategoryResult(category="Andere", confidence=0.85)
+    print(f"🏷️  Category: {andere_category.category} (confidence: {andere_category.confidence:.1%})")
+    print("ℹ️  Analysis skipped - 'Andere' category has no estimations available")
     print("\n📊 Final Analysis Result:")
-    final_result = {
-        "likelihood_win": win_likelihood,
-        "estimated_time": f"{time_est.value} {time_est.unit}",
-        "estimated_cost": cost_est.total_chf
+    andere_result = {
+        "category": andere_category.category,
+        "likelihood_win": None,
+        "estimated_time": None,
+        "estimated_cost": None
     }
-    
-    for key, value in final_result.items():
+    for key, value in andere_result.items():
         print(f"   {key}: {value}")
 
 

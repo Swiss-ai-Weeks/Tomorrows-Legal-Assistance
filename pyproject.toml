@@ -18,4 +18,7 @@ dependencies = [
     "streamlit==1.50.0",
     "langgraph>=0.6.7",
     "langchain-openai>=0.3.33",
+    "graphviz>=0.21",
+    "pyppeteer>=2.0.0",
+    "requests>=2.32.5",
 ]

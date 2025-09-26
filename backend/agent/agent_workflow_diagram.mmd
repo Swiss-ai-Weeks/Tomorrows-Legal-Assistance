@@ -1,0 +1,32 @@
+graph TD
+    Start([Start]) --> Ingest[🔧 Ingest Node<br/>Normalize Input & Initialize Memory]
+    Ingest --> Categorize[🏷️ Categorize Node<br/>Classify Case into Legal Category]
+    
+    %% Conditional branching based on category
+    Categorize --> Decision{Category = 'Andere'?}
+    Decision -->|Yes| AggregateSkip[📊 Aggregate Node<br/>Return Category Only<br/>No Estimations]
+    Decision -->|No| WinLikelihood[🎯 Win Likelihood Node<br/>ReAct Analysis with RAG & Historic Cases]
+    
+    %% Main analysis flow
+    WinLikelihood --> TimeCost[⏱️💰 Time & Cost Node<br/>Business Logic Estimation]
+    TimeCost --> AggregateFull[📊 Aggregate Node<br/>Validate & Format Full Results]
+    
+    %% Both paths end
+    AggregateSkip --> End([End])
+    AggregateFull --> End
+    
+    %% Styling
+    classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef aggregate fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    
+    class Start,End startEnd
+    class Ingest,Categorize,WinLikelihood,TimeCost process
+    class Decision decision
+    class AggregateSkip,AggregateFull aggregate
+    
+    %% Add notes
+    Categorize -.->|"Categories:<br/>• Arbeitsrecht<br/>• Immobilienrecht<br/>• Strafverkehrsrecht<br/>• Andere"| Categorize
+    WinLikelihood -.->|"Uses:<br/>• rag_swiss_law()<br/>• historic_cases()<br/>• Apertus LLM"| WinLikelihood
+    TimeCost -.->|"Uses:<br/>• estimate_time()<br/>• estimate_cost()<br/>• Business Logic"| TimeCost
