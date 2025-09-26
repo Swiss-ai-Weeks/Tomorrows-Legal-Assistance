@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Swiss Legal Analysis Agent - Workflow Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        #diagram {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .info h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇨🇭 Swiss Legal Analysis Agent - Workflow Diagram</h1>
+        
+        <div id="diagram">
+            <div class="mermaid">
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	ingest(ingest)
+	categorize(categorize)
+	win_likelihood(win_likelihood)
+	time_and_cost(time_and_cost)
+	aggregate(aggregate)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> ingest;
+	categorize -.-> aggregate;
+	categorize -.-> win_likelihood;
+	ingest --> categorize;
+	time_and_cost --> aggregate;
+	win_likelihood --> time_and_cost;
+	aggregate --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
+
+            </div>
+        </div>
+        
+        <div class="info">
+            <h3>📊 Workflow Summary</h3>
+            <ul>
+                <li><strong>Start</strong> → <strong>Ingest</strong>: Normalize input and initialize memory</li>
+                <li><strong>Ingest</strong> → <strong>Categorize</strong>: Classify case into legal category</li>
+                <li><strong>Categorize</strong> → <strong>Win Likelihood</strong>: ReAct analysis (if not 'Andere')</li>
+                <li><strong>Categorize</strong> → <strong>Aggregate</strong>: Direct path for 'Andere' category</li>
+                <li><strong>Win Likelihood</strong> → <strong>Time & Cost</strong>: Business logic estimation</li>
+                <li><strong>Time & Cost</strong> → <strong>Aggregate</strong>: Validate and format results</li>
+                <li><strong>Aggregate</strong> → <strong>End</strong>: Return final JSON output</li>
+            </ul>
+            
+            <h3>🏷️ Legal Categories</h3>
+            <ul>
+                <li><strong>Arbeitsrecht</strong>: Employment law cases</li>
+                <li><strong>Immobilienrecht</strong>: Real estate law cases</li>
+                <li><strong>Strafverkehrsrecht</strong>: Traffic criminal law cases</li>
+                <li><strong>Andere</strong>: Other legal matters (classification only)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                curve: 'linear',
+                padding: 20
+            }
+        });
+    </script>
+</body>
+</html>
