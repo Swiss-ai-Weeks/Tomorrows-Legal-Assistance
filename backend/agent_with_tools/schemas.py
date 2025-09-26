@@ -57,9 +57,9 @@ class CostBreakdown(BaseModel):
 class AgentOutput(BaseModel):
     """Final output schema for the agent."""
     category: str = Field(..., description="Legal case category")
-    likelihood_win: Optional[int] = Field(None, ge=1, le=100, description="Likelihood of winning (1-100)")
+    likelihood_win: Optional[str] = Field(None, description="Likelihood of winning as percentage string (e.g., '60%')")
     estimated_time: Optional[str] = Field(None, description="Time estimate (ISO 8601 duration or human string)")
-    estimated_cost: Optional[Union[float, CostBreakdown]] = Field(None, description="Cost estimate in CHF")
+    estimated_cost: Optional[str] = Field(None, description="Cost estimate as string (e.g., '3500 CHF')")
     explanation: Optional[str] = Field(None, description="Reasoning and explanation for the analysis")
 
 

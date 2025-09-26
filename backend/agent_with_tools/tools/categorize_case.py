@@ -5,6 +5,14 @@ import logging
 from backend.agent_with_tools.schemas import CategoryResult
 from classifier.classifier_chain import get_classifier_chain
 
+# Ensure environment variables are set from settings
+try:
+    from core.config import settings
+    if not os.environ.get("APERTUS_API_KEY"):
+        os.environ["APERTUS_API_KEY"] = settings.APERTUS_API_KEY
+except ImportError:
+    pass
+
 
 def categorize_case(text: str) -> CategoryResult:
     """

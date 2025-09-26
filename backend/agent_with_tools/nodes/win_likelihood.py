@@ -45,13 +45,34 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
         # Add explanation
         state.explanation_parts.append(business_result["explanation"])
     
-    # Try to gather relevant Swiss law
+    # Try to gather Swiss law context with focused queries
     rag_calls = 0
     try:
         if rag_calls < MAX_RAG_CALLS:
-            # Query relevant statutes
-            law_query = f"{category} legal requirements case analysis"
-            law_docs = rag_swiss_law(law_query, top_k=3)
+            # Create specific query based on case category and key terms from case
+            case_lower = case_text.lower()
+            
+            if "Arbeitsrecht" in category:
+                if "terminated" in case_lower or "dismissal" in case_lower or "notice" in case_lower:
+                    law_query = "Swiss employment termination notice period OR 336 Code of Obligations dismissal protection"
+                elif "wage" in case_lower or "salary" in case_lower:
+                    law_query = "Swiss employment law wage payment obligations OR 322 Code of Obligations"
+                else:
+                    law_query = "Swiss employment law employee rights protection OR Code of Obligations employment"
+            elif "Immobilienrecht" in category:
+                if "defect" in case_lower or "damage" in case_lower:
+                    law_query = "Swiss property law hidden defects warranty OR 197 Code of Obligations"
+                else:
+                    law_query = "Swiss real estate law property disputes contracts"
+            elif "Strafverkehrsrecht" in category:
+                if "license" in case_lower or "driving" in case_lower:
+                    law_query = "Swiss traffic law license suspension OR Road Traffic Act penalties"
+                else:
+                    law_query = "Swiss traffic criminal law violations fines"
+            else:
+                law_query = f"Swiss law {category} legal regulations"
+            
+            law_docs = rag_swiss_law(law_query, top_k=2)  # Reduced for performance
             state.tool_call_count += 1
             rag_calls += 1
             
@@ -70,7 +91,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
         if historic_calls < MAX_HISTORIC_CALLS:
             # Query similar cases
             cases_query = f"{category} similar case outcomes"
-            similar_cases = historic_cases(cases_query, top_k=3)
+            similar_cases = historic_cases(cases_query, top_k=2)  # Reduced for performance
             state.tool_call_count += 1
             historic_calls += 1
             
@@ -99,45 +120,56 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     messages = [
         SystemMessage(content=WIN_LIKELIHOOD_PROMPT),
         HumanMessage(content=f"""
-        Analyze the likelihood of winning this case based on the available evidence:
+        Analyze this Swiss legal case and provide a win likelihood score:
         
         {full_context}{baseline_guidance}
         
-        Provide a numerical score from 1-100 representing the likelihood of winning.
-        Consider:
-        1. Business logic baseline (if available) as starting point
-        2. Strength of legal position based on statutes
-        3. Historical outcomes in similar cases (when available, not stub data)
-        4. Quality of evidence and case facts
-        5. Potential procedural challenges
+        Format your response as:
+        SCORE: [number from 1-100]
+        REASONING: [1-2 clear sentences explaining why this score, focusing on key legal strengths or weaknesses]
         
-        If historic cases are not available (stub implementation), do not factor them into your analysis.
-        Focus on legal statutes, business logic baseline, and case facts.
-        
-        Respond with just the numerical score (1-100) and brief reasoning.
+        Guidelines:
+        - Use business logic baseline as starting point if provided
+        - Adjust based on Swiss legal requirements and case facts
+        - Be concise and user-friendly
+        - Ignore any "stub" or "not available" data
         """)
     ]
     
     response = llm.invoke(messages)
     content = response.content.strip()
     
-    # Extract numerical score
+    # Extract numerical score and reasoning
     likelihood = 50  # default moderate score
+    reasoning = content
+    
     try:
-        # Look for numbers in the response
         import re
-        numbers = re.findall(r'\b(\d{1,3})\b', content)
-        for num_str in numbers:
-            num = int(num_str)
-            if 1 <= num <= 100:
-                likelihood = num
-                break
+        # Look for SCORE: pattern first
+        score_match = re.search(r'SCORE:\s*(\d{1,3})', content, re.IGNORECASE)
+        if score_match:
+            likelihood = int(score_match.group(1))
+            likelihood = max(1, min(100, likelihood))  # Clamp to 1-100
+        else:
+            # Fallback: look for any number in valid range
+            numbers = re.findall(r'\b(\d{1,3})\b', content)
+            for num_str in numbers:
+                num = int(num_str)
+                if 1 <= num <= 100:
+                    likelihood = num
+                    break
+        
+        # Extract reasoning if available
+        reasoning_match = re.search(r'REASONING:\s*(.+)', content, re.IGNORECASE | re.DOTALL)
+        if reasoning_match:
+            reasoning = reasoning_match.group(1).strip()
+        
     except (ValueError, AttributeError):
-        pass  # Keep default
+        pass  # Keep defaults
     
     state.likelihood_win = likelihood
     
-    # Add LLM reasoning to explanation
-    state.explanation_parts.append(f"Final likelihood analysis: {content}")
+    # Add clean reasoning to explanation
+    state.explanation_parts.append(f"Win likelihood analysis: {reasoning}")
     
     return state
