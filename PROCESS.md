@@ -6,6 +6,7 @@ In Context of electronic first notification of loss for a legal insurance  (empl
 ## 2) Triage: A Classifier should be able to Classify the Claim in one of the 3 categories:
 - Employment laws
 - Traffic criminal laws
+- Others (this will not be processed further)
 ## 3) Case Success potential
 The Agent should give a score on the chance of winning the case and tell the customer if it is worth to proceed
 ## 4) ase  Effort Estimation (rarely the case by employment law):
