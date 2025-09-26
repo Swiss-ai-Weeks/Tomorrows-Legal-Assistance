@@ -6,7 +6,7 @@ class ClaimsType(Enum):
 
 class TrafficCriminalLawCategory(Enum):
     MODERATE_SPEEDING = "moderate_speeding"
-    DRIVING_UNDER_INFLUENCE = "driving_under_influence_alcohol_license withdrawal"
+    DRIVING_UNDER_INFLUENCE = "driving_under_influence_alcohol_license_withdrawal"
     PARKING_LOT_ACCIDENT = "parking_lot_accident_chf_2500_no_witnesses"
     PARKING_FINE_EXPIRED = "parking_fine_expired_few_minutes"
     ALCOHOL_PENALTY_ORDER = "alcohol_06_penalty_order"
