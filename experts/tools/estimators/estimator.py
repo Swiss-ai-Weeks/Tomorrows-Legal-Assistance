@@ -1,6 +1,6 @@
 def estimate_chance_of_winning(claims_type: str, claims_category: str):
     """
-    Estimate the estimate chance of winning  required based on claims type and category.
+    Estimate the chance of winning based on claims type and category.
     """
     if claims_type == "traffic_criminal_law":
         if claims_category == "Speeding 20 km/h outside built-up areas":
@@ -15,11 +15,26 @@ def estimate_chance_of_winning(claims_type: str, claims_category: str):
             chance_of_winning = "20–30% (low, slightly better if strong evidence)"
         else:
             chance_of_winning = "unknown"
+    elif claims_type == "employment_law":
+        if claims_category == "Termination (poor performance)":
+            chance_of_winning = "20%"
+        elif claims_category == "Increase in workload":
+            chance_of_winning = "0%"
+        elif claims_category == "Lohn Monate ausstehend":
+            chance_of_winning = "100%"
+        elif claims_category == "Fristlose Kündigung":
+            chance_of_winning = "80%"
+        elif claims_category == "Kündigung während Krankheit/Unfall":
+            chance_of_winning = "100%"
+        else:
+            chance_of_winning = "unknown"
+    else:
+        chance_of_winning = "unknown"
     return chance_of_winning
 
 def estimate_time(claims_type: str, claims_category: str):
     """
-    Estimate the  required based on claims type and category.
+    Estimate the time required based on claims type and category.
     """
     if claims_type == "traffic_criminal_law":
         if claims_category == "Speeding 20 km/h outside built-up areas":
@@ -34,12 +49,26 @@ def estimate_time(claims_type: str, claims_category: str):
             time = "3–6 months"
         else:
             time = "unknown"
+    elif claims_type == "employment_law":
+        if claims_category == "Termination (poor performance)":
+            time = "3 Months"
+        elif claims_category == "Increase in workload":
+            time = "0 Months"
+        elif claims_category == "Lohn Monate ausstehend":
+            time = "5 Months"
+        elif claims_category == "Fristlose Kündigung":
+            time = "6 Months"
+        elif claims_category == "Kündigung während Krankheit/Unfall":
+            time = "3 Months"
+        else:
+            time = "unknown"
+    else:
+        time = "unknown"
     return time
-
 
 def estimate_costs(claims_type: str, claims_category: str):
     """
-    Estimate the effort required based on claims type and category.
+    Estimate the costs involved based on claims type and category.
     """
     if claims_type == "traffic_criminal_law":
         if claims_category == "Speeding 20 km/h outside built-up areas":
@@ -54,6 +83,21 @@ def estimate_costs(claims_type: str, claims_category: str):
             costs = "Fine: CHF 500–1,000; Road Traffic fees: CHF 200–1,000; Lawyer: CHF 1,000–3,000; Court: CHF 500–3,000"
         else:
             costs = "unknown"
+    elif claims_type == "employment_law":
+        if claims_category == "Termination (poor performance)":
+            costs = "3500"
+        elif claims_category == "Increase in workload":
+            costs = "0"
+        elif claims_category == "Lohn Monate ausstehend":
+            costs = "5000"
+        elif claims_category == "Fristlose Kündigung":
+            costs = "2500"
+        elif claims_category == "Kündigung während Krankheit/Unfall":
+            costs = "1500"
+        else:
+            costs = "unknown"
+    else:
+        costs = "unknown"
     return costs
 
 # Update the known_actions dictionary to use these functions
@@ -62,6 +106,3 @@ known_actions = {
     "estimate_time": estimate_time,
     "estimate_costs": estimate_costs,
 }
-
-
-#print(estimate_chance_of_winning("traffic_criminal_law", "Speeding 20 km/h outside built-up areas"))
