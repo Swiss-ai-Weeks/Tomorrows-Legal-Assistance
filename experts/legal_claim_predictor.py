@@ -65,7 +65,7 @@ prompt = PromptTemplate(
 )
 
 # 4. Main execution function
-def process_legal_email(email_content: str):
+def process_legal_email(email_content: str) -> tuple[str, str, str]:
     """
     Processes an email to extract claim details and estimate outcomes.
     
@@ -103,9 +103,13 @@ def process_legal_email(email_content: str):
         print(f"Estimated Costs: {costs}")
         print("--------------------------")
 
+        return chance, time, costs
+
     except Exception as e:
         print(f"An error occurred: {e}")
         print("Could not process the email. Please ensure the content is clear and the API key is valid.")
+
+        return None, None, None
 
 # --- Example Usage ---
 if __name__ == "__main__":
