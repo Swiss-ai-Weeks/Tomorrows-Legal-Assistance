@@ -10,6 +10,6 @@ In Context of electronic first notification of loss for a legal insurance  (empl
 The Agent should give a score on the chance of winning the case and tell the customer if it is worth to proceed
 ## Case  Effort Estimation (rarely the case by employment law):
 - Can the Case be handled by internal employees or need external experts?
- - If External effort needed: 	
-  - What is the Time estimation?
-  - What is the cost estimation
+  - If External effort needed: 	
+    - What is the Time estimation?
+    - What is the cost estimation
