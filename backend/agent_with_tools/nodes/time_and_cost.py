@@ -102,6 +102,8 @@ def time_and_cost_node(state: AgentState, llm) -> AgentState:
     
     # Get time estimate
     try:
+        # Add case text to enhanced_case_facts for subcategory inference
+        enhanced_case_facts["case_text"] = case_text
         time_estimate = estimate_time(enhanced_case_facts)
         state.tool_call_count += 1
         state.time_estimate = time_estimate
@@ -123,7 +125,9 @@ def time_and_cost_node(state: AgentState, llm) -> AgentState:
     
     # Prepare cost inputs
     cost_inputs = {
-        "time_estimate": state.time_estimate.dict(),
+        "time_estimate": state.time_estimate.model_dump(),
+        "category": category,  # Add category for estimator mapping
+        "case_text": case_text,  # Add case text for subcategory inference
         "hourly_rates": {
             "lawyer": DEFAULT_HOURLY_RATE_LAWYER,
         },

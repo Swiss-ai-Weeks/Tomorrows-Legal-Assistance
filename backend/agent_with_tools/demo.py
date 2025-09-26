@@ -5,7 +5,12 @@ of the tools, showing the complete workflow from case input to final analysis.
 """
 
 import os
+import sys
 from typing import List, Dict, Any, Union
+
+# Add project root to Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from backend.agent_with_tools.schemas import (
     Doc, Case, TimeEstimate, CostBreakdown, CategoryResult
 )
