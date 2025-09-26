@@ -160,11 +160,9 @@ Provide a report with the following structure in markdown:
 '''
                 response = llm.invoke(analysis_prompt)
                 response_text = response.content
-                print(f"Response RAW TEXT: {response_text}")
                 # This removes common leading whitespace that causes
                 # Markdown to be rendered as a code block.
                 processed_text = textwrap.dedent(response_text)
-                print(f"Response processed TEXT: {processed_text}")
                 
                 # FIX: Ensure a blank line exists between headings and lists
                 processed_text = re.sub(r'([^\n])\n(\s*[\*\-]\s)', r'\1\n\n\2', response_text)
