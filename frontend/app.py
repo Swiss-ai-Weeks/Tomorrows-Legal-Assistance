@@ -109,7 +109,7 @@ if prompt := st.chat_input("What is your legal question?"):
             st.warning("APERTUS_API_KEY not set. Cannot generate title.")
 
     # Display assistant response
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar="media/Gemini_Generated_Image_wl26p8wl26p8wl26.png"):
         message_placeholder = st.empty()
         full_response = ""
         
