@@ -161,23 +161,38 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 # We need to format it nicely for display.
                 analysis_result = response.json()
 
-                # Handle the cost field, which could be a dictionary
+                # Handle the cost field, which could be a dictionary, string, or number
                 cost = analysis_result.get('estimated_cost', 'N/A')
                 if isinstance(cost, dict):
                     total_cost = cost.get('total_chf', 'N/A')
-                    cost_str = f"{total_cost:.2f} CHF" if isinstance(total_cost, (int, float)) else 'N/A'
+                    cost_str = f"{total_cost:.2f} CHF" if isinstance(total_cost, (int, float)) else str(total_cost)
+                elif isinstance(cost, str):
+                    cost_str = cost  # Already formatted as string like "2500 CHF"
+                elif isinstance(cost, (int, float)):
+                    cost_str = f"{cost} CHF"
                 else:
-                    cost_str = f"{cost} CHF" if isinstance(cost, (int, float)) else 'N/A'
+                    cost_str = 'N/A'
 
+                # Get explanation if available
+                explanation = analysis_result.get('explanation', '')
+                
                 # Format the response into a markdown string
                 processed_text = f"""
 **Case Category:** {analysis_result.get('category', 'N/A')}
 
-**Likelihood of Winning:** {analysis_result.get('likelihood_win', 'N/A')}%
+**Likelihood of Winning:** {analysis_result.get('likelihood_win', 'N/A')}
 
 **Estimated Cost:** {cost_str}
 
 **Estimated Timeframe:** {analysis_result.get('estimated_time', 'N/A')}
+"""
+
+                # Add explanation if available
+                if explanation and explanation.strip():
+                    processed_text += f"""
+**Detailed Analysis:**
+
+{explanation}
 """
 
             except requests.exceptions.RequestException as e:

@@ -31,7 +31,7 @@ async def run_agent(case_input: CaseInput) -> AgentOutput:
 
         if not analysis_result:
             raise HTTPException(status_code=500, detail="Agent failed to produce a result.")
-
+        print(analysis_result)
         return analysis_result
     except Exception as e:
         # Catch potential errors during agent execution
