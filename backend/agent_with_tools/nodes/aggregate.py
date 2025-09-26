@@ -18,11 +18,18 @@ def aggregate_node(state: AgentState) -> AgentState:
     
     # Handle 'Andere' category - no estimations possible
     if category == "Andere":
+        explanation = ""
+        if state.explanation_parts:
+            explanation = " | ".join(state.explanation_parts)
+        else:
+            explanation = "Category 'Andere' - analysis tools not applicable for this case type"
+        
         state.result = AgentOutput(
             category=category,
             likelihood_win=None,
             estimated_time=None,
-            estimated_cost=None
+            estimated_cost=None,
+            explanation=explanation
         )
         return state
     
@@ -73,12 +80,18 @@ def aggregate_node(state: AgentState) -> AgentState:
     # Ensure likelihood_win is within valid range
     likelihood = max(1, min(100, state.likelihood_win))
     
+    # Compile explanation from all analysis parts
+    explanation = ""
+    if state.explanation_parts:
+        explanation = " | ".join(state.explanation_parts)
+    
     # Create final output with all fields
     state.result = AgentOutput(
         category=category,
         likelihood_win=likelihood,
         estimated_time=time_str,
-        estimated_cost=cost_output
+        estimated_cost=cost_output,
+        explanation=explanation
     )
     
     return state

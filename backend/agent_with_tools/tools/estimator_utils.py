@@ -38,7 +38,7 @@ def extract_subcategory(case_text: str, category: str) -> str:
             return "termination_poor_performance"
     
     elif category == "traffic_criminal_law":
-        if any(word in case_lower for word in ["alcohol", "drunk", "dui"]):
+        if any(word in case_lower for word in ["alcohol", "drunk", "dui", "influence"]):
             return "driving_under_influence_alcohol_license_withdrawal"
         elif any(word in case_lower for word in ["parking", "parked"]):
             if "accident" in case_lower:

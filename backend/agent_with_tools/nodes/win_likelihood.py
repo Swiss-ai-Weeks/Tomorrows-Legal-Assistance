@@ -4,7 +4,8 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from backend.agent_with_tools.schemas import AgentState
 from backend.agent_with_tools.tools.rag_swiss_law import rag_swiss_law
 from backend.agent_with_tools.tools.historic_cases import historic_cases
-from backend.agent_with_tools.policies import WIN_LIKELIHOOD_PROMPT, MAX_RAG_CALLS, MAX_HISTORIC_CALLS
+from backend.agent_with_tools.tools.estimate_likelihood import estimate_business_likelihood, get_likelihood_explanation_context
+from backend.agent_with_tools.policies import WIN_LIKELIHOOD_PROMPT, MAX_RAG_CALLS, MAX_HISTORIC_CALLS, MAX_BUSINESS_LIKELIHOOD_CALLS
 
 
 def win_likelihood_node(state: AgentState, llm) -> AgentState:
@@ -21,8 +22,28 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     category = state.category.category if state.category else "Unknown"
     case_text = state.case_input.text
     
+    # Initialize explanation parts if not already done
+    if state.explanation_parts is None:
+        state.explanation_parts = []
+    
     # Prepare context for analysis
     context_parts = [f"Case Category: {category}", f"Case Description: {case_text}"]
+    
+    # Get business logic baseline estimate first
+    business_likelihood_calls = 0
+    baseline_likelihood = None
+    
+    if business_likelihood_calls < MAX_BUSINESS_LIKELIHOOD_CALLS:
+        business_result = estimate_business_likelihood(case_text, category)
+        state.tool_call_count += 1
+        business_likelihood_calls += 1
+        
+        baseline_likelihood = business_result["likelihood"]
+        business_context = get_likelihood_explanation_context(business_result)
+        context_parts.append(f"Business Logic Analysis:\n{business_context}")
+        
+        # Add explanation
+        state.explanation_parts.append(business_result["explanation"])
     
     # Try to gather relevant Swiss law
     rag_calls = 0
@@ -66,19 +87,32 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     # Use LLM for ReAct analysis
     full_context = "\n\n".join(context_parts)
     
+    # Prepare enhanced prompt with baseline guidance
+    baseline_guidance = ""
+    if baseline_likelihood is not None:
+        baseline_guidance = f"""
+        
+        BASELINE GUIDANCE: Business logic suggests {baseline_likelihood}% likelihood based on case type and category.
+        Use this as a starting point but adjust based on case-specific evidence below.
+        """
+    
     messages = [
         SystemMessage(content=WIN_LIKELIHOOD_PROMPT),
         HumanMessage(content=f"""
         Analyze the likelihood of winning this case based on the available evidence:
         
-        {full_context}
+        {full_context}{baseline_guidance}
         
         Provide a numerical score from 1-100 representing the likelihood of winning.
         Consider:
-        1. Strength of legal position based on statutes
-        2. Historical outcomes in similar cases
-        3. Quality of evidence and case facts
-        4. Potential procedural challenges
+        1. Business logic baseline (if available) as starting point
+        2. Strength of legal position based on statutes
+        3. Historical outcomes in similar cases (when available, not stub data)
+        4. Quality of evidence and case facts
+        5. Potential procedural challenges
+        
+        If historic cases are not available (stub implementation), do not factor them into your analysis.
+        Focus on legal statutes, business logic baseline, and case facts.
         
         Respond with just the numerical score (1-100) and brief reasoning.
         """)
@@ -102,5 +136,8 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
         pass  # Keep default
     
     state.likelihood_win = likelihood
+    
+    # Add LLM reasoning to explanation
+    state.explanation_parts.append(f"Final likelihood analysis: {content}")
     
     return state

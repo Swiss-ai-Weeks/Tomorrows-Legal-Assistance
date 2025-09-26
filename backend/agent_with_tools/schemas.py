@@ -60,6 +60,7 @@ class AgentOutput(BaseModel):
     likelihood_win: Optional[int] = Field(None, ge=1, le=100, description="Likelihood of winning (1-100)")
     estimated_time: Optional[str] = Field(None, description="Time estimate (ISO 8601 duration or human string)")
     estimated_cost: Optional[Union[float, CostBreakdown]] = Field(None, description="Cost estimate in CHF")
+    explanation: Optional[str] = Field(None, description="Reasoning and explanation for the analysis")
 
 
 class AgentState(BaseModel):
@@ -76,6 +77,7 @@ class AgentState(BaseModel):
     # Working memory
     case_facts: Optional[Dict[str, Any]] = None
     tool_call_count: int = 0
+    explanation_parts: Optional[list[str]] = None  # Collect explanation parts during analysis
     
     # Final output
     result: Optional[AgentOutput] = None

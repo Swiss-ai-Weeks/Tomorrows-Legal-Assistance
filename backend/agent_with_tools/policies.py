@@ -56,18 +56,20 @@ If some inputs are missing, proceed with reasonable defaults and note assumption
 AGGREGATE_PROMPT = """Validate and normalize all results into the final JSON format.
 
 Return JSON only:
-{"likelihood_win": <int 1-100>, "estimated_time": "<string>", "estimated_cost": <number or object>}
+{"likelihood_win": <int 1-100>, "estimated_time": "<string>", "estimated_cost": <number or object>, "explanation": "<string>"}
 
 Ensure:
 - likelihood_win is between 1-100
 - estimated_time is readable (e.g., "6 months" or "P6M")
 - estimated_cost is properly formatted
+- explanation summarizes the reasoning and analysis
 - All required fields are present"""
 
 # Tool calling constraints
 MAX_TOOL_CALLS = 6
 MAX_RAG_CALLS = 3
 MAX_HISTORIC_CALLS = 3
+MAX_BUSINESS_LIKELIHOOD_CALLS = 1
 MAX_ASK_USER_CALLS = 1
 
 # Confidence thresholds
