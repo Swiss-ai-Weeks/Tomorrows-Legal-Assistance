@@ -64,4 +64,4 @@ known_actions = {
 }
 
 
-print(estimate_chance_of_winning("traffic_criminal_law", "Speeding 20 km/h outside built-up areas"))
+#print(estimate_chance_of_winning("traffic_criminal_law", "Speeding 20 km/h outside built-up areas"))
