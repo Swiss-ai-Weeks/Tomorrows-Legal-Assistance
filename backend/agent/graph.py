@@ -1,7 +1,7 @@
 from typing import Any
-from langgraph.graph import START, StateGraph
+from langgraph.graph import START, StateGraph, END
 
-from backend.agent.schema import LegalFieldClassification, CaseCategoryClassification
+from backend.agent.schema import LegalFieldClassification, CaseCategoryClassification, classes
 from backend.agent.state import LegalAgentState
 from backend.utils import markdown_to_prompt_template
 from experts.tools.swiss_law_retriever.retriever import LegalRetriever
@@ -36,7 +36,7 @@ def classify_legal_field(state: LegalAgentState) -> dict[str, Any]:
 
 def classify_case_category(state: LegalAgentState) -> dict[str, Any]:
     result: CaseCategoryClassification = classify_case_category_runnable.invoke(
-        {"question": state.question, "additional_context": state.legal_field}
+        {"question": state.question, "additional_context": state.legal_field, "classes": classes.get(state.legal_field)}
     )
     return {"case_category": result.case_category}
 
@@ -53,12 +53,13 @@ workflow = StateGraph(LegalAgentState)
 # Add nodes
 workflow.add_node("classify_legal_field", classify_legal_field)
 workflow.add_node("classify_case_category", classify_case_category)
-workflow.add_node("search_similar_cases", search_similar_cases)
+# workflow.add_node("search_similar_cases", search_similar_cases)
 
 # Add edges
 workflow.add_edge(START, "classify_legal_field")
 workflow.add_edge("classify_legal_field", "classify_case_category")
-workflow.add_edge("classify_case_category", "search_similar_cases")
+workflow.add_edge("classify_case_category", END)
+# workflow.add_edge("classify_case_category", "search_similar_cases")
 
 
 # Compile the workflow
