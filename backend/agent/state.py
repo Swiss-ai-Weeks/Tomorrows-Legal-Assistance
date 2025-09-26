@@ -15,3 +15,6 @@ class LegalAgentState(BaseModel):
         default=None,
         description="The determined case category of the user's question/case.",
     )
+    similar_cases: str = Field(
+        "", description="Candidates of similar cases to the user's input."
+    )

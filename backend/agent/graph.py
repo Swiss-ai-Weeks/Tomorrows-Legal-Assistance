@@ -4,6 +4,7 @@ from langgraph.graph import START, StateGraph
 from backend.agent.schema import LegalFieldClassification, CaseCategoryClassification
 from backend.agent.state import LegalAgentState
 from backend.utils import markdown_to_prompt_template
+from experts.tools.swiss_law_retriever.retriever import LegalRetriever
 from apertus.apertus import LangchainApertus
 from core.config import settings
 
@@ -40,16 +41,24 @@ def classify_case_category(state: LegalAgentState) -> dict[str, Any]:
     return {"case_category": result.case_category}
 
 
+def search_similar_cases(state: LegalAgentState) -> dict[str, Any]:
+    retriever = LegalRetriever()
+    cases = retriever.retrieve(state.case_category)
+    return {"similar_cases": cases}
+
+
 # Create the workflow graph
 workflow = StateGraph(LegalAgentState)
 
 # Add nodes
 workflow.add_node("classify_legal_field", classify_legal_field)
 workflow.add_node("classify_case_category", classify_case_category)
+workflow.add_node("search_similar_cases", search_similar_cases)
 
 # Add edges
 workflow.add_edge(START, "classify_legal_field")
 workflow.add_edge("classify_legal_field", "classify_case_category")
+workflow.add_edge("classify_case_category", "search_similar_cases")
 
 
 # Compile the workflow
