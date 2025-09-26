@@ -1,5 +1,5 @@
 from typing import Any
-from langgraph.graph import StateGraph
+from langgraph.graph import START, StateGraph
 
 from backend.agent.state import LegalAgentState
 from backend.utils import markdown_to_prompt_template
@@ -30,3 +30,19 @@ workflow = StateGraph(LegalAgentState)
 
 # Add nodes
 workflow.add_node("classify_legal_field", classify_legal_field)
+
+# Add edges
+workflow.add_edge(START, "classify_legal_field")
+
+
+# Compile the workflow
+legal_agent = workflow.compile().with_config({"tags": ["legal-agent-v0"]})
+
+
+if __name__ == "__main__":
+    response = legal_agent.invoke(
+        {
+            "question": "I was caught speeding 20 km/h over the limit outside a built-up area. I received a fine and wonder if it makes sense to contest it."
+        }
+    )
+    print(response)
