@@ -4,6 +4,7 @@ from langgraph.graph import StateGraph
 from backend.agent.state import LegalAgentState
 from backend.utils import markdown_to_prompt_template
 from apertus.apertus import LangchainApertus
+from core.config import settings
 
 
 classify_legal_field_prompt = markdown_to_prompt_template(
@@ -13,7 +14,7 @@ classify_legal_field_prompt = markdown_to_prompt_template(
 
 # Create the runnable with the prompt and model
 classify_legal_field_runnable = classify_legal_field_prompt | LangchainApertus(
-    api_key="todo"
+    api_key=settings.APERTUS_API_KEY
 )
 
 
