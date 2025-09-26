@@ -1,0 +1,13 @@
+[project]
+name = "tomorrows-legal-assistance-frontend"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain>=0.3.27",
+    "langchain-openai>=0.1.20",
+    "openai>=1.109.1",
+    "python-dotenv>=1.1.1",
+    "uvicorn>=0.37.0",
+    "streamlit==1.50.0",
+]

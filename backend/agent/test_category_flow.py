@@ -18,7 +18,7 @@ def test_andere_category():
     categorize_case.__code__ = mock_categorize_andere.__code__
     
     try:
-        from backend.agent import create_legal_agent
+        from backend.agent.graph_with_tools import create_legal_agent
         
         # Load environment
         from backend.agent.demo import load_env_vars
@@ -82,7 +82,7 @@ def test_regular_category():
     
     try:
         from backend.agent.demo import patch_tools_for_demo
-        from backend.agent import create_legal_agent
+        from backend.agent.graph_with_tools import create_legal_agent
         
         # Patch tools with mocks
         patch_tools_for_demo()

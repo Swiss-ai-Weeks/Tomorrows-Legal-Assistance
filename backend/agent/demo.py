@@ -9,7 +9,8 @@ from typing import List, Dict, Any, Union
 from backend.agent.schemas import (
     Doc, Case, TimeEstimate, CostBreakdown, CategoryResult
 )
-from backend.agent import create_legal_agent, CaseInput, CaseMetadata
+        from backend.agent.graph_with_tools import create_legal_agent
+from backend.agent.schemas import CaseInput, CaseMetadata
 
 
 def load_env_vars():
@@ -144,12 +145,12 @@ class MockTools:
 def patch_tools_for_demo():
     """Patch the tool modules with mock implementations for demonstration."""
     from backend.agent.tools import (
-        rag_swiss_law, historic_cases, categorize_case, 
+        historic_cases, categorize_case, 
         estimate_time, estimate_cost, ask_user
     )
     
     # Replace the NotImplementedError functions with mocks
-    rag_swiss_law.__code__ = MockTools.mock_rag_swiss_law.__code__
+    # Note: rag_swiss_law is no longer patched since it has real implementation
     historic_cases.__code__ = MockTools.mock_historic_cases.__code__  
     categorize_case.__code__ = MockTools.mock_categorize_case.__code__
     estimate_time.__code__ = MockTools.mock_estimate_time.__code__

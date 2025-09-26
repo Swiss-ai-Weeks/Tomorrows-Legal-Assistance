@@ -160,13 +160,13 @@ The frontend is a Streamlit application located in the `frontend` directory.
 ### Running the Frontend
 
 1.  **Install Dependencies**: Ensure you have installed the project dependencies by running the following command in the project's root directory:
-    ```bash
+    ```Powershell
+    cd frontend
     uv sync
     ```
 
 2.  **Run the app**:
-    ```bash
-    streamlit run frontend/app.py
+    ```Powershell
+    .venv\Scripts\activate
+    streamlit run app.py
     ```
-
-The application will open in your web browser.

@@ -6,7 +6,7 @@ including interactive diagram display and analysis demonstrations.
 
 from typing import Optional
 from IPython.display import display, Image
-from backend.agent.graph import create_legal_agent
+from backend.agent.graph_with_tools import create_legal_agent
 # Schema imports available but not needed for this module
 
 
@@ -60,7 +60,7 @@ def run_interactive_demo(api_key: Optional[str] = None) -> dict:
         >>> result = run_interactive_demo()
         >>> print(result)
     """
-    from backend.agent import run_case_analysis
+    from backend.agent.graph_with_tools import run_case_analysis
     
     # Sample employment case
     sample_case = {
