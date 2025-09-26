@@ -9,13 +9,51 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, project_root)
 
 def test_rag_integration():
-    """Test that the RAG Swiss law tool works with the real retriever."""
+    """Test script for Swiss Legal Agent RAG integration."""
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
+from backend.agent_with_tools import create_legal_agent, CaseInput
+
+def test_rag_integration():
+    """Test the agent with real RAG integration."""
+    
+    # Create the agent
+    agent = create_legal_agent()
+    
+    # Test case about employment law
+    test_case = CaseInput(
+        case_description="I was terminated from my job without proper notice period. I had a permanent contract and worked there for 3 years. The company claims it was due to restructuring, but I suspect discrimination based on my age (I'm 58 years old). Can I challenge this termination?",
+        user_id="test_user_123"
+    )
+    
+    print(f"Testing case: {test_case.case_description[:100]}...")
+    print("-" * 50)
+    
+    try:
+        # Run the analysis
+        result = agent.invoke({"case_input": test_case})
+        print("Analysis completed successfully!")
+        print(f"Category: {result['final_output'].category}")
+        print(f"Win Likelihood: {result['final_output'].win_likelihood_percent}%")
+        print(f"Time Estimate: {result['final_output'].estimated_time_months} months")
+        print(f"Cost Estimate: CHF {result['final_output'].estimated_cost_chf}")
+        
+    except Exception as e:
+        print(f"Error during analysis: {e}")
+        import traceback
+        traceback.print_exc()
+
+if __name__ == "__main__":
+    test_rag_integration()
     
     print("🧪 Testing RAG Swiss Law Integration")
     print("=" * 40)
     
     try:
-        from backend.agent.tools.rag_swiss_law import rag_swiss_law
+        from backend.agent_with_tools.tools.rag_swiss_law import rag_swiss_law
         
         # Test query
         query = "employment termination rights Switzerland"
@@ -56,8 +94,8 @@ def test_full_agent_with_rag():
     print("=" * 40)
     
     try:
-        from backend.agent.graph_with_tools import create_legal_agent
-        from backend.agent.schemas import CaseInput
+        from backend.agent_with_tools.graph import create_legal_agent
+        from backend.agent_with_tools.schemas import CaseInput
         
         # Load API key
         api_key = os.getenv("APERTUS_API_KEY")

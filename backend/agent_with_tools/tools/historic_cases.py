@@ -1,7 +1,7 @@
-"""Historic cases retrieval tool."""
+"""Historic cases tool - retrieves similar past legal cases for comparison."""
 
 from typing import List
-from backend.agent.schemas import Case
+from backend.agent_with_tools.schemas import Case
 
 
 def historic_cases(query: str, top_k: int = 5) -> List[Case]:

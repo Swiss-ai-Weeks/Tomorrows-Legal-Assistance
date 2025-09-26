@@ -1,6 +1,6 @@
 """Case categorization tool."""
 
-from backend.agent.schemas import CategoryResult
+from backend.agent_with_tools.schemas import CategoryResult
 
 
 def categorize_case(text: str) -> CategoryResult:

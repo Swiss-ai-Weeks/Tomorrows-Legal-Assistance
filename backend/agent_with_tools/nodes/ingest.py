@@ -1,6 +1,6 @@
-"""Ingest node for normalizing input and creating working memory."""
+"""Ingest node - processes case input and initializes metadata."""
 
-from backend.agent.schemas import AgentState
+from backend.agent_with_tools.schemas import AgentState
 
 
 def ingest_node(state: AgentState) -> AgentState:

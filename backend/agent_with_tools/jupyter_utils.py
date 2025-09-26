@@ -6,7 +6,7 @@ including interactive diagram display and analysis demonstrations.
 
 from typing import Optional
 from IPython.display import display, Image
-from backend.agent.graph_with_tools import create_legal_agent
+from backend.agent_with_tools.graph import create_legal_agent
 # Schema imports available but not needed for this module
 
 
@@ -18,7 +18,7 @@ def display_agent_graph(api_key: Optional[str] = None) -> None:
         api_key: Optional API key for Apertus. If None, tries environment variables.
         
     Example:
-        >>> from backend.agent.jupyter_utils import display_agent_graph
+        >>> from backend.agent_with_tools.jupyter_utils import display_agent_graph
         >>> display_agent_graph()
     """
     try:
@@ -56,11 +56,11 @@ def run_interactive_demo(api_key: Optional[str] = None) -> dict:
         Dictionary containing analysis results
         
     Example:
-        >>> from backend.agent.jupyter_utils import run_interactive_demo
+        >>> from backend.agent_with_tools.jupyter_utils import run_interactive_demo
         >>> result = run_interactive_demo()
         >>> print(result)
     """
-    from backend.agent.graph_with_tools import run_case_analysis
+    from backend.agent_with_tools.graph import run_case_analysis
     
     # Sample employment case
     sample_case = {

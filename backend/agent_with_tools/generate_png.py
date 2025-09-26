@@ -16,7 +16,7 @@ import requests
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
 
-from backend.agent.graph_with_tools import create_legal_agent
+from backend.agent_with_tools.graph import create_legal_agent
 
 
 def draw_mermaid_png(

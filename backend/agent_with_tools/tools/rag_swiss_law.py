@@ -3,7 +3,7 @@
 import sys
 import os
 from typing import List
-from backend.agent.schemas import Doc
+from backend.agent_with_tools.schemas import Doc
 
 # Add experts directory to path to import the retriever
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))

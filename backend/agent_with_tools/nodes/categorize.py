@@ -1,10 +1,10 @@
 """Categorization node for classifying legal cases."""
 
 from langchain_core.messages import HumanMessage, SystemMessage
-from backend.agent.schemas import AgentState
-from backend.agent.tools.categorize_case import categorize_case
-from backend.agent.tools.ask_user import ask_user
-from backend.agent.policies import CATEGORIZE_PROMPT, MIN_CATEGORY_CONFIDENCE
+from backend.agent_with_tools.schemas import AgentState
+from backend.agent_with_tools.tools.categorize_case import categorize_case
+from backend.agent_with_tools.tools.ask_user import ask_user
+from backend.agent_with_tools.policies import CATEGORIZE_PROMPT, MIN_CATEGORY_CONFIDENCE
 
 
 def categorize_node(state: AgentState, llm) -> AgentState:
@@ -77,7 +77,7 @@ def categorize_node(state: AgentState, llm) -> AgentState:
                 category = cat
                 break
         
-        from backend.agent.schemas import CategoryResult
+        from backend.agent_with_tools.schemas import CategoryResult
         state.category = CategoryResult(category=category, confidence=0.8)
     
     # Update case facts with category

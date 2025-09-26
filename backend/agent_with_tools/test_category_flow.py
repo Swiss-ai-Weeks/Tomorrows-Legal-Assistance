@@ -1,7 +1,7 @@
 """Test script to verify 'Andere' category handling in the legal agent."""
 
-from backend.agent.schemas import CaseInput, CaseMetadata, CategoryResult
-from backend.agent.tools.categorize_case import categorize_case
+from backend.agent_with_tools.schemas import CaseInput, CaseMetadata, CategoryResult
+from backend.agent_with_tools.tools.categorize_case import categorize_case
 
 
 def test_andere_category():
@@ -18,10 +18,10 @@ def test_andere_category():
     categorize_case.__code__ = mock_categorize_andere.__code__
     
     try:
-        from backend.agent.graph_with_tools import create_legal_agent
+        from backend.agent_with_tools.graph import create_legal_agent
         
         # Load environment
-        from backend.agent.demo import load_env_vars
+        from backend.agent_with_tools.demo import load_env_vars
         load_env_vars()
         
         # Create agent
@@ -81,14 +81,14 @@ def test_regular_category():
     print("=" * 40)
     
     try:
-        from backend.agent.demo import patch_tools_for_demo
-        from backend.agent.graph_with_tools import create_legal_agent
+        from backend.agent_with_tools.demo import patch_tools_for_demo
+        from backend.agent_with_tools.graph import create_legal_agent
         
         # Patch tools with mocks
         patch_tools_for_demo()
         
         # Load environment
-        from backend.agent.demo import load_env_vars
+        from backend.agent_with_tools.demo import load_env_vars
         load_env_vars()
         
         # Create agent

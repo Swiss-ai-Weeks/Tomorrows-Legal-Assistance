@@ -6,11 +6,11 @@ of the tools, showing the complete workflow from case input to final analysis.
 
 import os
 from typing import List, Dict, Any, Union
-from backend.agent.schemas import (
+from backend.agent_with_tools.schemas import (
     Doc, Case, TimeEstimate, CostBreakdown, CategoryResult
 )
-        from backend.agent.graph_with_tools import create_legal_agent
-from backend.agent.schemas import CaseInput, CaseMetadata
+        from backend.agent_with_tools import create_legal_agent, run_case_analysis
+from backend.agent_with_tools.schemas import CaseInput, CaseMetadata
 
 
 def load_env_vars():
@@ -144,7 +144,7 @@ class MockTools:
 
 def patch_tools_for_demo():
     """Patch the tool modules with mock implementations for demonstration."""
-    from backend.agent.tools import (
+    from backend.agent_with_tools.tools import (
         historic_cases, categorize_case, 
         estimate_time, estimate_cost, ask_user
     )

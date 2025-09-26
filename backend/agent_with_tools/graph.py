@@ -7,8 +7,8 @@ This module creates a ReAct-style agent that:
 4. Produces validated JSON results
 
 Example usage:
-    >>> from backend.agent.graph import create_legal_agent
-    >>> from backend.agent.schemas import CaseInput
+    >>> from backend.agent_with_tools.graph import create_legal_agent
+    >>> from backend.agent_with_tools.schemas import CaseInput
     >>> 
     >>> agent = create_legal_agent()
     >>> case = CaseInput(text="My employer terminated me without cause...")
@@ -24,12 +24,12 @@ Example usage:
 from typing import Dict, Any, Literal
 from langgraph.graph import StateGraph, END
 from langgraph.graph.state import CompiledStateGraph
-from backend.agent.schemas import AgentState
-from backend.agent.nodes.ingest import ingest_node
-from backend.agent.nodes.categorize import categorize_node
-from backend.agent.nodes.win_likelihood import win_likelihood_node
-from backend.agent.nodes.time_and_cost import time_and_cost_node
-from backend.agent.nodes.aggregate import aggregate_node
+from backend.agent_with_tools.schemas import AgentState
+from backend.agent_with_tools.nodes.ingest import ingest_node
+from backend.agent_with_tools.nodes.categorize import categorize_node
+from backend.agent_with_tools.nodes.win_likelihood import win_likelihood_node
+from backend.agent_with_tools.nodes.time_and_cost import time_and_cost_node
+from backend.agent_with_tools.nodes.aggregate import aggregate_node
 from backend.apertus.model import get_apertus_model
 # Note: MAX_TOOL_CALLS can be imported from policies for guard logic if needed
 
@@ -135,7 +135,7 @@ def run_case_analysis(case_input_dict: Dict[str, Any], api_key: str = None) -> D
         >>> print(result["likelihood_win"])
         75
     """
-    from backend.agent.schemas import CaseInput
+    from backend.agent_with_tools.schemas import CaseInput
     
     # Convert dict to CaseInput
     case_input = CaseInput(**case_input_dict)
@@ -340,7 +340,7 @@ if __name__ == "__main__":
         display_mermaid_png(agent)
         
         # Test with sample input
-        from backend.agent.schemas import CaseInput
+        from backend.agent_with_tools.schemas import CaseInput
         sample_case = CaseInput(**SAMPLE_INPUT)
         initial_state = AgentState(case_input=sample_case)
         

@@ -1,7 +1,7 @@
 """Cost estimation tool."""
 
 from typing import Dict, Any, Union
-from backend.agent.schemas import CostBreakdown
+from backend.agent_with_tools.schemas import CostBreakdown
 
 
 def estimate_cost(inputs: Dict[str, Any]) -> Union[float, CostBreakdown]:

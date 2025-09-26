@@ -1,10 +1,10 @@
 """Win likelihood analysis node."""
 
 from langchain_core.messages import HumanMessage, SystemMessage
-from backend.agent.schemas import AgentState
-from backend.agent.tools.rag_swiss_law import rag_swiss_law
-from backend.agent.tools.historic_cases import historic_cases
-from backend.agent.policies import WIN_LIKELIHOOD_PROMPT, MAX_RAG_CALLS, MAX_HISTORIC_CALLS
+from backend.agent_with_tools.schemas import AgentState
+from backend.agent_with_tools.tools.rag_swiss_law import rag_swiss_law
+from backend.agent_with_tools.tools.historic_cases import historic_cases
+from backend.agent_with_tools.policies import WIN_LIKELIHOOD_PROMPT, MAX_RAG_CALLS, MAX_HISTORIC_CALLS
 
 
 def win_likelihood_node(state: AgentState, llm) -> AgentState:

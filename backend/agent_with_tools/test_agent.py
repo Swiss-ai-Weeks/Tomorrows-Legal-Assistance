@@ -2,9 +2,9 @@
 
 import pytest
 from unittest.mock import Mock, patch
-from backend.agent.schemas import CaseInput, CaseMetadata, AgentState
-from backend.agent.nodes.ingest import ingest_node
-from backend.agent.nodes.aggregate import aggregate_node
+from backend.agent_with_tools.schemas import CaseInput, CaseMetadata, AgentState
+from backend.agent_with_tools.nodes.ingest import ingest_node
+from backend.agent_with_tools.nodes.aggregate import aggregate_node
 
 
 def test_case_input_validation():
@@ -45,7 +45,7 @@ def test_ingest_node():
 
 def test_aggregate_node():
     """Test the aggregate node produces valid output."""
-    from backend.agent.schemas import TimeEstimate, CostBreakdown
+    from backend.agent_with_tools.schemas import TimeEstimate, CostBreakdown
     
     # Create state with all required components
     state = AgentState(
@@ -75,10 +75,10 @@ def test_aggregate_node_missing_data():
 
 def test_agent_creation():
     """Test that the agent can be created without errors."""
-    from backend.agent.graph import create_legal_agent
+    from backend.agent_with_tools.graph import create_legal_agent
     
     # Mock the Apertus model to avoid needing API key
-    with patch('backend.agent.graph.get_apertus_model') as mock_get_model:
+    with patch('backend.agent_with_tools.graph.get_apertus_model') as mock_get_model:
         mock_llm = Mock()
         mock_get_model.return_value = mock_llm
         
@@ -91,7 +91,7 @@ def test_agent_creation():
 
 def test_schema_validation():
     """Test output schema validation."""
-    from backend.agent.schemas import AgentOutput
+    from backend.agent_with_tools.schemas import AgentOutput
     
     # Valid output
     output = AgentOutput(
@@ -120,7 +120,7 @@ def test_schema_validation():
 
 def test_categories():
     """Test that categorization covers expected legal areas."""
-    from backend.agent.schemas import CategoryResult
+    from backend.agent_with_tools.schemas import CategoryResult
     
     categories = ["Arbeitsrecht", "Immobilienrecht", "Strafverkehrsrecht", "Andere"]
     

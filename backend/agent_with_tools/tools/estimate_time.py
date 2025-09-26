@@ -1,7 +1,7 @@
 """Time estimation tool."""
 
 from typing import Dict, Any
-from backend.agent.schemas import TimeEstimate
+from backend.agent_with_tools.schemas import TimeEstimate
 
 
 def estimate_time(case_facts: Dict[str, Any]) -> TimeEstimate:

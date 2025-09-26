@@ -1,6 +1,6 @@
 """Aggregation node for validating and normalizing final results."""
 
-from backend.agent.schemas import AgentState, AgentOutput, CostBreakdown
+from backend.agent_with_tools.schemas import AgentState, AgentOutput, CostBreakdown
 
 
 def aggregate_node(state: AgentState) -> AgentState:
