@@ -133,4 +133,4 @@ tmp/
 # Data files (keep structure but ignore actual data)
 # data/*.parquet  # Uncomment if you want to ignore data files
 
-*.code_workspace
+*.code-workspace
