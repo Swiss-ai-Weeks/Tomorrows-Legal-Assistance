@@ -87,7 +87,11 @@ class LegalRetriever:
         )
         return results
 
+<<<<<<< HEAD
     def retrieve(self, input: str, n_results: int = 3) -> str:
+=======
+    def retrieve(self, input: str) -> str:
+>>>>>>> 76cd6a8368dbcd06ee37d8d6a004a4b0359fbc6f
         """
         Retrieve relevant document contents based on a query string.
 
@@ -102,6 +106,7 @@ class LegalRetriever:
                  relevant documents, or a message if no results are found.
         """
         print(f"🔍 Retrieving documents for query: '{input}'")
+<<<<<<< HEAD
         search_results = self._search_vector_store(input, n_results)
         return search_results
     
@@ -122,6 +127,9 @@ class LegalRetriever:
         """
         print(f"🔍 Retrieving documents for query: '{input}'")
         search_results = self._search_vector_store(input, n_results)
+=======
+        search_results = self._search_vector_store(input)
+>>>>>>> 76cd6a8368dbcd06ee37d8d6a004a4b0359fbc6f
 
         if not search_results or not search_results.get("documents") or not search_results["documents"][0]:
             return "No relevant documents were found for your query."
