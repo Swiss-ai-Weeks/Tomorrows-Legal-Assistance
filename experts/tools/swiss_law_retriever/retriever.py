@@ -87,7 +87,7 @@ class LegalRetriever:
         )
         return results
 
-    def retrieve(self, input: str) -> str:
+    def retrieve(self, input: str, n_results: int = 3) -> str:
         """
         Retrieve relevant document contents based on a query string.
 
@@ -102,7 +102,26 @@ class LegalRetriever:
                  relevant documents, or a message if no results are found.
         """
         print(f"🔍 Retrieving documents for query: '{input}'")
-        search_results = self._search_vector_store(input)
+        search_results = self._search_vector_store(input, n_results)
+        return search_results
+    
+    
+    def retrieve_str(self, input: str, n_results: int = 3) -> str:
+        """
+        Retrieve relevant document contents based on a query string.
+
+        This method performs a semantic search and concatenates the content
+        of the top matching documents into a single string.
+
+        Args:
+            input (str): The user's query or question.
+
+        Returns:
+            str: A string containing the combined content of the most
+                 relevant documents, or a message if no results are found.
+        """
+        print(f"🔍 Retrieving documents for query: '{input}'")
+        search_results = self._search_vector_store(input, n_results)
 
         if not search_results or not search_results.get("documents") or not search_results["documents"][0]:
             return "No relevant documents were found for your query."
