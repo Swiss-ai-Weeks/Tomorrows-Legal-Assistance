@@ -106,6 +106,4 @@ known_actions = {
     "estimate_time": estimate_time,
     "estimate_costs": estimate_costs,
 }
-
-
 #print(estimate_chance_of_winning("employment_law","kuendigung_waehrend_krankheit_unfall"))
