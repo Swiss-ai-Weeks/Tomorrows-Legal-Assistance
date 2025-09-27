@@ -65,8 +65,24 @@ uv add package-name==1.2.3
 #### Installing Dependencies
 
 ```bash
-# Install all dependencies (including dev dependencies)
+# Install all dependencies (including dev dependencies for both, the frontend/backend)
 uv sync
+cd ./frontend && uv sync
+```
+
+## Getting started
+
+Run the app with the following commands:
+
+Make sure you have [make](https://gnuwin32.sourceforge.net/packages/make.htm) installed on your machine.
+For MacOS, make sure to install [make with Homebrew](https://formulae.brew.sh/formula/make).
+
+```bash
+# This will start the Python backend
+make start_backend
+
+# This will start the Streamlit frontend
+make start_frontend
 ```
 
 #### Running Commands
@@ -97,20 +113,6 @@ Tomorrows-Legal-Assistance/
 ```
 
 ## FastAPI Backend
-
-This project includes a FastAPI backend for legal assistance services.
-
-### Starting the Backend Server
-
-After setting up the environment, you can start the FastAPI development server:
-
-```bash
-# Make the script executable (only needed once)
-chmod +x start_backend.sh
-
-# Start the backend server using the provided script
-./start_backend.sh
-```
 
 The API will be available at:
 - **Main API**: http://localhost:8000
@@ -156,17 +158,3 @@ cp .env.example .env
 ## Frontend (Streamlit)
 
 The frontend is a Streamlit application located in the `frontend` directory.
-
-### Running the Frontend
-
-1.  **Install Dependencies**: Ensure you have installed the project dependencies by running the following command in the project's root directory:
-    ```Powershell
-    cd frontend
-    uv sync
-    ```
-
-2.  **Run the app**:
-    ```Powershell
-    .venv\Scripts\activate
-    streamlit run app.py
-    ```
