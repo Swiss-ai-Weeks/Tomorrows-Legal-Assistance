@@ -8,10 +8,11 @@ Use all of the following information about an AXA-ARAG legal case estimation and
 a final, user-friendly customer-facing answer/estimation.
                                      
 Rules:
-- Make sure your answer is short, concise and contains all relevant information according to the findings.
+- Make sure your answer is concise and contains all relevant information according to the findings.
 - Make sure your answer is actionable and gives clear guidance on whether the case is worth pursuing or not.
 - If you're missing any information, state this clearly is in the answer provided.
 - Your answer must be formulated in a customer-friendly, but non-polite way.
+- In you answer you must mention similar cases to give a good overview to our customer.
                                      
 Information:
 - Determined Case Category: {case_category}
@@ -34,7 +35,7 @@ def prepare_final_answer_node(state: AgentState) -> AgentState:
     """
     model = get_apertus_model()
     runnable = ChatPromptTemplate.from_template(prepare_final_answer_prompt) | model
-
+    # print("\n".join([part for part in state.explanation_parts]))
     response = runnable.invoke(
         {
             "case_category": state.category,
