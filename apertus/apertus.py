@@ -1,6 +1,7 @@
 from openai import OpenAI
 from langchain_openai import ChatOpenAI
 
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 APERTUS_MODEL_NAME = "swiss-ai/Apertus-70B"
 APERTUS_BASE_URL = "https://api.swisscom.com/layer/swiss-ai-weeks/apertus-70b/v1"
@@ -26,6 +27,17 @@ class LangchainApertus(ChatOpenAI):
             model=APERTUS_MODEL_NAME,
             base_url=APERTUS_BASE_URL,
             **kwargs,
+        )
+
+class LLangchainApertus(ChatGoogleGenerativeAI):
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(
+            model="gemini-2.5-flash-lite",
+            temperature=0,
+            max_tokens=None,
+            timeout=None,
+            max_retries=2,
+            # other params...
         )
 
 
