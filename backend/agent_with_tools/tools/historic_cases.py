@@ -128,37 +128,6 @@ def historic_cases(query: str, top_k: int = 5) -> List[Case]:
                 except (ValueError, TypeError):
                     year = 2020
             
-            # Extract outcome - for legal assistance emails, assume settled unless evidence suggests otherwise
-            outcome = metadata.get("outcome", metadata.get("Outcome", ""))
-            if not outcome:
-                # Try to infer outcome from document content
-                doc_lower = document_text.lower()
-                if any(word in doc_lower for word in ["gewonnen", "erfolg", "successful", "victory", "won"]):
-                    outcome = "win"
-                elif any(word in doc_lower for word in ["verloren", "failed", "unsuccessful", "defeat", "lost"]):
-                    outcome = "loss"
-                elif any(word in doc_lower for word in ["vergleich", "settlement", "settled", "agreement"]):
-                    outcome = "settled"
-                else:
-                    # For assistance requests, assume settled (most common outcome)
-                    outcome = "settled"
-            
-            # Map outcome to expected values
-            outcome_mapping = {
-                "win": "win", "won": "win", "victory": "win", "success": "win", "successful": "win",
-                "gewonnen": "win", "erfolg": "win", "siegreich": "win",
-                "loss": "loss", "lost": "loss", "defeat": "loss", "failed": "loss", "unsuccessful": "loss",
-                "verloren": "loss", "niederlage": "loss", "gescheitert": "loss",
-                "settle": "settled", "settled": "settled", "settlement": "settled", "compromise": "settled",
-                "vergleich": "settled", "einigung": "settled", "beilegung": "settled"
-            }
-            
-            # Normalize outcome
-            normalized_outcome = "settled"  # Default fallback for legal assistance cases
-            if isinstance(outcome, str):
-                outcome_lower = outcome.lower()
-                normalized_outcome = outcome_mapping.get(outcome_lower, "settled")
-            
             # Extract citation
             citation = metadata.get("citation", metadata.get("Citation", metadata.get("docref", "")))
             if not citation:
@@ -167,14 +136,14 @@ def historic_cases(query: str, top_k: int = 5) -> List[Case]:
                     citation = f"Legal Assistance Case {case_id}"
                 else:
                     citation = None
-            
+            print(metadata.get("outcome", metadata.get("Outcome", "")))
             # Create Case object
             case = Case(
                 id=case_id,
                 court=str(court),
                 year=year,
                 summary=case_summary,
-                outcome=normalized_outcome,
+                outcome=metadata.get("outcome", metadata.get("Outcome", "")), #normalized_outcome,
                 citation=str(citation) if citation else None
             )
             
