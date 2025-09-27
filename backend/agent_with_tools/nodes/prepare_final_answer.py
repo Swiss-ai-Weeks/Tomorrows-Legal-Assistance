@@ -25,7 +25,8 @@ if not GEMINI_LLM:
     - Estimated cost: {estimated_cost}
     - Explanation: {explanation}
 
-    Start your super short ENGLISH output :                             
+    Here is our customer base input, answer in the same language : {user_input}
+    Start your super short output :                             
     """)
 else:
     prepare_final_answer_prompt = dedent("""
@@ -46,6 +47,7 @@ else:
     - Estimated cost: {estimated_cost}
     - Explanation: {explanation}
 
+    Here is our customer base input, answer in the same language : {user_input}
     """)
 
 
@@ -71,6 +73,7 @@ def prepare_final_answer_node(state: AgentState) -> AgentState:
             "explanation": "\n".join([part for part in state.explanation_parts])
             if state.explanation_parts
             else "",
+            "user_input": state.case_input.text,
         }
     )
     state.result.final_answer = response.content
