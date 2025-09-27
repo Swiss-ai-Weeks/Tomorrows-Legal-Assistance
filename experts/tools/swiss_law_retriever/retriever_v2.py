@@ -1,8 +1,9 @@
 import os
 import chromadb
 from chromadb.config import Settings
-import google.generativeai as genai
+from google import genai
 from typing import List, Dict, Optional
+
 
 class LegalRetriever:
     """
