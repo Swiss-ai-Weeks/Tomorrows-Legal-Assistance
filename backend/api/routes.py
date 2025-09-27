@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Create the agent, passing the API key from settings
+agent = create_legal_agent(api_key=settings.APERTUS_API_KEY)
+
 
 @router.post("/agent_with_tools", response_model=AgentOutput)
 async def run_agent(case_input: CaseInput) -> AgentOutput:
@@ -21,9 +24,6 @@ async def run_agent(case_input: CaseInput) -> AgentOutput:
     Run the legal analysis agent on a given case.
     """
     try:
-        # Create the agent, passing the API key from settings
-        agent = create_legal_agent(api_key=settings.APERTUS_API_KEY)
-
         # Prepare the initial state for the agent
         initial_state = {"case_input": case_input}
 

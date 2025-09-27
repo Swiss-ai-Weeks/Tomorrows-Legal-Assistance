@@ -1,8 +1,9 @@
 import os
 import chromadb
 from chromadb.config import Settings
-import google.generativeai as genai
+from google import genai
 from typing import List, Dict, Optional
+
 
 class LegalRetriever:
     """
@@ -149,7 +150,7 @@ if __name__ == '__main__':
         retriever = LegalRetriever()
         
         # Example query
-        user_query = "What are the key responsibilities of a data protection officer under GDPR?"
+        user_query = "Arbeitchert"
         
         # Retrieve the information
         response = retriever.retrieve(user_query)
