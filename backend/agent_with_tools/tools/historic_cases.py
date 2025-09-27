@@ -78,7 +78,7 @@ def historic_cases(query: str, top_k: int = 5) -> List[Case]:
             document_text = result.document
             
             # Try to parse structured information from the document content and metadata
-            case_summary = document_text[:500] + "..." if len(document_text) > 500 else document_text
+            case_summary = document_text
             
             # Extract relevant fields from metadata if available
             case_id = result.id
@@ -144,7 +144,7 @@ def historic_cases(query: str, top_k: int = 5) -> List[Case]:
                 year=year,
                 summary=case_summary,
                 outcome=metadata.get("outcome", metadata.get("Outcome", "")), #normalized_outcome,
-                citation=str(citation) if citation else None
+                citation=str(citation) if citation else ""
             )
             
             cases.append(case)

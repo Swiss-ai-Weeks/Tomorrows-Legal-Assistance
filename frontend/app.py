@@ -116,6 +116,7 @@ with st.sidebar:
         # Add PDF downloads if source documents are available in the most recent assistant message
         if "source_documents" in st.session_state:
             st.subheader("📄 Source Documents")
+            doc_list = []
             for doc in st.session_state.source_documents:
                 doc_id = doc.get("id", "")
                 title = doc.get("title", "Unknown Document")
@@ -156,24 +157,25 @@ with st.sidebar:
                         )
                 else:
                     # Regular document - try to find PDF
-                    filename = title if title.endswith(".pdf") else f"{title}.pdf"
+                    filename = title if title.endswith(".pdf") else title.split("_")[0]
                     pdf_path = os.path.join(
-                        os.path.dirname(__file__), "..", "data", "swiss_law", filename
+                        os.path.dirname(__file__), "..", "data", "selected_swiss_law", filename
                     )
+                    if filename not in doc_list:
+                        if os.path.exists(pdf_path):
+                            with open(pdf_path, "rb") as pdf_file:
+                                pdf_data = pdf_file.read()
 
-                    if os.path.exists(pdf_path):
-                        with open(pdf_path, "rb") as pdf_file:
-                            pdf_data = pdf_file.read()
-
-                        st.download_button(
-                            label=f"📖 {filename}",
-                            data=pdf_data,
-                            file_name=filename,
-                            mime="application/pdf",
-                            key=f"download_{filename}",
-                        )
-                    else:
-                        st.warning(f"PDF not found: {filename}")
+                            st.download_button(
+                                label=f"📖 {filename}",
+                                data=pdf_data,
+                                file_name=filename,
+                                mime="application/pdf",
+                                key=f"download_{filename}",
+                            )
+                            doc_list.append(filename)
+                        else:
+                            st.warning(f"PDF not found: {filename}")
 
 st.title("Tomorrow's Legal Assistant")
 

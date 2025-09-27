@@ -1,5 +1,6 @@
 """System prompts, tool-calling rules, and guards for the legal agent."""
 
+import os
 # Global system message for Apertus
 GLOBAL_SYSTEM_PROMPT = """You are a Swiss law case-triage analyst. Use tools to retrieve statutes and similar cases. If facts are missing for classification, ask precisely via ask_user. Output only the final JSON with fields likelihood_win, estimated_time, and estimated_cost. Use tools sparingly and prefer high-signal evidence.
 
@@ -68,8 +69,17 @@ Ensure:
 
 # Tool calling constraints - Reduced for better performance
 MAX_TOOL_CALLS = 4
-MAX_RAG_CALLS = 2  # Reduced from 3 to 2
-MAX_HISTORIC_CALLS = 2  # Reduced from 3 to 2
+
+GEMINI_LLM = os.getenv("GEMINI_LLM", "FALSE") == "TRUE"
+
+if GEMINI_LLM:
+    print()
+    MAX_RAG_CALLS = 5  # Reduced from 3 to 2
+    MAX_HISTORIC_CALLS = 10  # Reduced from 3 to 2
+else:
+    MAX_RAG_CALLS = 2  # Reduced from 3 to 2
+    MAX_HISTORIC_CALLS = 3  # Reduced from 3 to 2
+
 MAX_BUSINESS_LIKELIHOOD_CALLS = 1
 MAX_ASK_USER_CALLS = 1
 

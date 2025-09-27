@@ -2,25 +2,53 @@ from backend.agent_with_tools.schemas import AgentState
 from backend.apertus import get_apertus_model
 from langchain_core.prompts import ChatPromptTemplate
 from textwrap import dedent
+import os
 
-prepare_final_answer_prompt = dedent("""
-Use all of the following information about an AXA-ARAG legal case estimation and provide 
-a final, user-friendly customer-facing answer/estimation.
-                                     
-Rules:
-- Make sure your answer is concise and contains all relevant information according to the findings.
-- Make sure your answer is actionable and gives clear guidance on whether the case is worth pursuing or not.
-- If you're missing any information, state this clearly is in the answer provided.
-- Your answer must be formulated in a customer-friendly, but non-polite way.
-- In you answer you must mention similar cases to give a good overview to our customer.
-                                     
-Information:
-- Determined Case Category: {case_category}
-- Likelihood to win the case: {likelihood}
-- Estimated time: {estimated_time}
-- Estimated cost: {estimated_cost}
-- Explanation: {explanation}
-""")
+GEMINI_LLM = os.getenv("GEMINI_LLM", "FALSE") == "TRUE"
+
+if not GEMINI_LLM:
+    prepare_final_answer_prompt = dedent("""
+    Use all of the following information about an AXA-ARAG legal case estimation and provide 
+    a final, user-friendly customer-facing answer/estimation.
+                                        
+    Rules:
+    - Make sure your answer is AS short as possible concise and contains all relevant information according to the findings.
+    - Make sure your answer is actionable and gives clear guidance on whether the case is worth pursuing or not.
+    - If you're missing any information, state this clearly is in the answer provided.
+    - Your answer must be formulated in a customer-friendly, but non-polite way.
+    - In you answer you must mention similar cases to give a good overview to our customer.
+                                        
+    Information:
+    - Determined Case Category: {case_category}
+    - Likelihood to win the case: {likelihood}
+    - Estimated time: {estimated_time}
+    - Estimated cost: {estimated_cost}
+    - Explanation: {explanation}
+
+    Here is our customer base input, answer in the same language : {user_input}
+    Start your super short output :                             
+    """)
+else:
+    prepare_final_answer_prompt = dedent("""
+    Use all of the following information about an AXA-ARAG legal case estimation and provide 
+    a final, user-friendly customer-facing answer/estimation.
+                                        
+    Rules:
+    - Make sure your answer is  concise and contains all relevant information according to the findings.
+    - Make sure your answer is actionable and gives clear guidance on whether the case is worth pursuing or not.
+    - If you're missing any information, state this clearly is in the answer provided.
+    - Your answer must be formulated in a customer-friendly, but non-polite way.
+    - In you answer you must mention similar cases to give a good overview to our customer.
+                                        
+    Information:
+    - Determined Case Category: {case_category}
+    - Likelihood to win the case: {likelihood}
+    - Estimated time: {estimated_time}
+    - Estimated cost: {estimated_cost}
+    - Explanation: {explanation}
+
+    Here is our customer base input, answer in the same language : {user_input}
+    """)
 
 
 def prepare_final_answer_node(state: AgentState) -> AgentState:
@@ -45,6 +73,7 @@ def prepare_final_answer_node(state: AgentState) -> AgentState:
             "explanation": "\n".join([part for part in state.explanation_parts])
             if state.explanation_parts
             else "",
+            "user_input": state.case_input.text,
         }
     )
     state.result.final_answer = response.content
