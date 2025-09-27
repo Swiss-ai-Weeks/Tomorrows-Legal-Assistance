@@ -51,7 +51,8 @@ def get_gemini_embeddings(texts: List[str]) -> List[List[float]]:
     
     return embeddings
 
-def generate_vector_store(data_folder: str = "../../data/swiss_law"):
+def generate_vector_store(data_folder: str = "../../data/selected_swiss_law"):
+
     """
     Generate vector store using Gemini embeddings
     """
