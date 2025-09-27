@@ -4,7 +4,6 @@ import os
 import sys
 import re
 import requests
-import base64
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -54,10 +53,6 @@ with st.sidebar:
     if "audio_enabled" not in st.session_state:
         st.session_state.audio_enabled = False
     
-    # Initialize audio ID for unique element identification
-    if "audio_id" not in st.session_state:
-        st.session_state.audio_id = hash(str(time.time()))
-    
     # Audio toggle button
     audio_button_text = "🔊 Music ON" if st.session_state.audio_enabled else "🔇 Music OFF"
     if st.button(audio_button_text, key="audio_toggle"):
@@ -66,130 +61,19 @@ with st.sidebar:
     
     # Show audio status and player when enabled
     if st.session_state.audio_enabled:
-        st.success("🎶 Music will play during analysis")
+        st.success("🎶 Music player enabled")
         
         # Load audio file
         audio_file_path = "frontend/media/apertus.mp3"
         with open(audio_file_path, "rb") as audio_file:
             audio_bytes = audio_file.read()
         
-        # Show visible audio player for user control and testing
-        st.write("**Audio Player (for testing and manual control):**")
+        # Show audio player for manual control
+        st.write("**🎵 Apertus Theme Song:**")
         st.audio(audio_bytes, format='audio/mp3')
         
-        # Instructions for the user
-        st.info("""
-        **How to enable background music:**
-        1. Click play on the audio player above once (this enables audio permissions)
-        2. You can then pause it - the background music will work during analysis
-        3. If music doesn't auto-play during analysis, try clicking anywhere on the page first
-        """)
-        
-        # Create JavaScript-controlled audio player
-        audio_b64 = base64.b64encode(audio_bytes).decode()
-        
-        # Embed hidden background audio player
-        st.markdown(f"""
-        <audio id="background-audio-player" loop preload="auto" style="display: none;">
-            <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
-            Your browser does not support the audio element.
-        </audio>
-        
-        <script>
-        (function() {{
-            // Initialize background audio
-            window.backgroundAudio = document.getElementById('background-audio-player');
-            
-            if (window.backgroundAudio) {{
-                window.backgroundAudio.volume = 0.2; // Lower volume for background
-                console.log('Background audio initialized');
-                
-                // Enable audio context after user interaction
-                let audioEnabled = false;
-                
-                function enableAudioContext() {{
-                    if (!audioEnabled && window.backgroundAudio) {{
-                        // Create a minimal audio context to enable autoplay
-                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        if (audioContext.state === 'suspended') {{
-                            audioContext.resume();
-                        }}
-                        audioEnabled = true;
-                        console.log('Audio context enabled');
-                    }}
-                }}
-                
-                // Listen for any user interaction to enable audio
-                ['click', 'touchstart', 'keydown'].forEach(event => {{
-                    document.addEventListener(event, enableAudioContext, {{ once: true }});
-                }});
-                
-                window.startBackgroundMusic = function() {{
-                    if (window.backgroundAudio) {{
-                        console.log('Attempting to start background music...');
-                        enableAudioContext(); // Ensure audio is enabled
-                        
-                        window.backgroundAudio.currentTime = 0;
-                        window.backgroundAudio.play()
-                            .then(() => {{
-                                console.log('Background music started successfully');
-                            }})
-                            .catch(e => {{
-                                console.log('Background music play failed:', e);
-                                console.log('Try clicking anywhere on the page first to enable audio');
-                            }});
-                    }}
-                }};
-                
-                window.stopBackgroundMusic = function() {{
-                    if (window.backgroundAudio && !window.backgroundAudio.paused) {{
-                        console.log('Stopping background music...');
-                        window.backgroundAudio.pause();
-                        window.backgroundAudio.currentTime = 0;
-                    }}
-                }};
-                
-                // Test function
-                window.testBackgroundMusic = function() {{
-                    console.log('Testing background music for 5 seconds...');
-                    window.startBackgroundMusic();
-                    setTimeout(() => {{
-                        window.stopBackgroundMusic();
-                        console.log('Background music test completed');
-                    }}, 5000);
-                }};
-            }} else {{
-                console.log('Background audio element not found');
-            }}
-        }})();
-        </script>
-        """, unsafe_allow_html=True)
-        
-        # Add test button
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("🎵 Test Background Music (5sec)", key="test_bg_music"):
-                st.markdown("""
-                <script>
-                if (window.testBackgroundMusic) {
-                    window.testBackgroundMusic();
-                } else {
-                    console.log('Test function not available');
-                }
-                </script>
-                """, unsafe_allow_html=True)
-                st.success("Testing background music for 5 seconds...")
-        
-        with col2:
-            if st.button("🔇 Stop Music", key="stop_music"):
-                st.markdown("""
-                <script>
-                if (window.stopBackgroundMusic) {
-                    window.stopBackgroundMusic();
-                }
-                </script>
-                """, unsafe_allow_html=True)
-                st.info("Stopped background music")
+        # Simple instructions
+        st.info("Use the audio player above to play music manually while using the app.")
     else:
         st.info("🔇 Music is disabled")
     
@@ -296,20 +180,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     if "chat_title" not in st.session_state:
         api_key = os.environ.get("APERTUS_API_KEY")
         if api_key:
-            # Start background music if enabled
-            if st.session_state.get("audio_enabled", False):
-                st.markdown("""
-                <script>
-                setTimeout(function() {
-                    console.log('Starting music for title generation...');
-                    if (window.startBackgroundMusic) {
-                        window.startBackgroundMusic();
-                    } else {
-                        console.log('startBackgroundMusic function not available');
-                    }
-                }, 100);
-                </script>
-                """, unsafe_allow_html=True)
+
             
             with st.spinner("Generating title..."):
                 try:
@@ -334,28 +205,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     clean_title = response.content.strip().split('\n')[0]
 
                     st.session_state.chat_title = clean_title
-                    
-                    # Stop background music
-                    if st.session_state.get("audio_enabled", False):
-                        st.markdown("""
-                        <script>
-                        if (window.stopBackgroundMusic) {
-                            window.stopBackgroundMusic();
-                        }
-                        </script>
-                        """, unsafe_allow_html=True)
-                    
                     st.rerun() # Rerun to display title and move to analysis step
                 except Exception as e:
-                    # Stop background music on error
-                    if st.session_state.get("audio_enabled", False):
-                        st.markdown("""
-                        <script>
-                        if (window.stopBackgroundMusic) {
-                            window.stopBackgroundMusic();
-                        }
-                        </script>
-                        """, unsafe_allow_html=True)
                     st.error(f"Could not generate title: {e}")
         else:
             st.warning("APERTUS_API_KEY not set. Cannot generate title.")
@@ -370,20 +221,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             st.warning("APERTUS_API_KEY not set. Cannot get analysis.")
             st.stop()
 
-        # Start background music if enabled
-        if st.session_state.get("audio_enabled", False):
-            st.markdown("""
-            <script>
-            setTimeout(function() {
-                console.log('Attempting to start background music...');
-                if (window.startBackgroundMusic) {
-                    window.startBackgroundMusic();
-                } else {
-                    console.log('startBackgroundMusic function not available');
-                }
-            }, 100);
-            </script>
-            """, unsafe_allow_html=True)
+
 
         with st.spinner("Analyzing your situation..."):
             try:
@@ -478,39 +316,13 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 """
 
             except requests.exceptions.RequestException as e:
-                # Stop background music on error
-                if st.session_state.get("audio_enabled", False):
-                    st.markdown("""
-                    <script>
-                    if (window.stopBackgroundMusic) {
-                        window.stopBackgroundMusic();
-                    }
-                    </script>
-                    """, unsafe_allow_html=True)
                 st.error(f"Failed to connect to the backend: {e}")
                 st.stop()
             except Exception as e:
-                # Stop background music on error
-                if st.session_state.get("audio_enabled", False):
-                    st.markdown("""
-                    <script>
-                    if (window.stopBackgroundMusic) {
-                        window.stopBackgroundMusic();
-                    }
-                    </script>
-                    """, unsafe_allow_html=True)
                 st.error(f"An unexpected error occurred: {e}")
                 st.stop()
 
-        # Stop background music after successful analysis
-        if st.session_state.get("audio_enabled", False):
-            st.markdown("""
-            <script>
-            if (window.stopBackgroundMusic) {
-                window.stopBackgroundMusic();
-            }
-            </script>
-            """, unsafe_allow_html=True)
+
 
         # Use the processed_text for streaming
         lines = processed_text.split('\n')
