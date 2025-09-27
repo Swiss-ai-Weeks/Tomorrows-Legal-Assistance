@@ -133,6 +133,31 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
                     if state.source_documents is None:
                         state.source_documents = []
                     state.source_documents.extend(fallback_docs)
+                    
+            elif law_docs and "Strafverkehrsrecht" in category:
+                # Check if retrieved documents are traffic law-related  
+                traffic_related = any(any(pattern in doc.title for pattern in ["SR-741", "SR-742"]) for doc in law_docs)
+                if not traffic_related:
+                    print("⚠️ RAG did not return traffic law documents, using fallback knowledge")
+                    # Create fallback traffic law context from known Swiss law
+                    from backend.agent_with_tools.schemas import Doc
+                    fallback_docs = [
+                        Doc(
+                            id="sr741_fallback",
+                            title="Swiss Road Traffic Act (SR-741) & Road Traffic Ordinance (SR-742)",
+                            snippet="""Swiss traffic law is governed by the Road Traffic Act (SR-741) and Road Traffic Ordinance (SR-742). 
+                            Key provisions: Speed limits are strictly enforced. Appeals require proof of technical errors or improper signage. 
+                            Administrative fines: 1st class (minor violations), 2nd class (moderate speeding), 3rd class (serious violations). 
+                            License suspension: automatic for certain speeds over limit. Defense options: measurement errors, 
+                            improper signage, emergency situations. Success rate for appeals is generally low unless technical violations proven.""",
+                            citation="Swiss Road Traffic Act SR-741 & Road Traffic Ordinance SR-742"
+                        )
+                    ]
+                    law_docs = fallback_docs
+                    # Store fallback documents for frontend display
+                    if state.source_documents is None:
+                        state.source_documents = []
+                    state.source_documents.extend(fallback_docs)
             
             if law_docs:
                 law_context = "\n".join([
@@ -174,11 +199,24 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     
     # Prepare enhanced prompt with baseline guidance
     baseline_guidance = ""
+    adjustment_range = ""
     if baseline_likelihood is not None:
+        # Calculate allowed adjustment range (±20% max, but not below 1 or above 100)
+        min_score = max(1, baseline_likelihood - 20)
+        max_score = min(100, baseline_likelihood + 20)
+        
         baseline_guidance = f"""
         
-        BASELINE GUIDANCE: Business logic suggests {baseline_likelihood}% likelihood based on case type and category.
-        Use this as a starting point but adjust based on case-specific evidence below.
+        CRITICAL BASELINE: Business logic analysis indicates {baseline_likelihood}% likelihood for this case type.
+        This is based on extensive legal experience and case outcomes.
+        """
+        
+        adjustment_range = f"""
+        SCORING CONSTRAINTS:
+        - Your score MUST be between {min_score}% and {max_score}% (±20% from baseline)
+        - Only deviate from {baseline_likelihood}% if you have STRONG legal evidence
+        - Small case improvements cannot overcome fundamental legal category limitations
+        - Swiss courts are generally predictable - respect the baseline guidance
         """
     
     messages = [
@@ -188,14 +226,17 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
         
         {full_context}{baseline_guidance}
         
+        {adjustment_range}
+        
         Format your response as:
         SCORE: [number from 1-100]
         REASONING: [1-2 clear sentences explaining why this score, focusing on key legal strengths or weaknesses]
         
         Guidelines:
-        - Use business logic baseline as starting point if provided
-        - Adjust based on Swiss legal requirements and case facts
-        - Be concise and user-friendly
+        - RESPECT the baseline percentage - it's based on real case outcomes
+        - Only adjust within the specified range unless extraordinary circumstances
+        - Swiss legal system is predictable - don't overestimate chances
+        - Focus on realistic legal assessment, not optimistic scenarios
         - Ignore any "stub" or "not available" data
         """)
     ]
@@ -222,6 +263,21 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
                 if 1 <= num <= 100:
                     likelihood = num
                     break
+        
+        # Apply baseline constraint validation if business logic baseline exists
+        if baseline_likelihood is not None:
+            # Calculate allowed range (±20% but not below 1 or above 100)
+            min_allowed = max(1, baseline_likelihood - 20)
+            max_allowed = min(100, baseline_likelihood + 20)
+            
+            # If LLM score is outside allowed range, constrain it
+            if likelihood < min_allowed or likelihood > max_allowed:
+                original_likelihood = likelihood
+                likelihood = max(min_allowed, min(max_allowed, likelihood))
+                print(f"⚠️ LLM score {original_likelihood}% outside baseline range [{min_allowed}-{max_allowed}%], constrained to {likelihood}%")
+                
+                # Update reasoning to reflect constraint
+                reasoning += f" Note: Score adjusted from {original_likelihood}% to respect business logic baseline of {baseline_likelihood}% (±20% range)."
         
         # Extract reasoning if available
         reasoning_match = re.search(r'REASONING:\s*(.+)', content, re.IGNORECASE | re.DOTALL)
