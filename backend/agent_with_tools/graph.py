@@ -34,18 +34,6 @@ from backend.apertus.model import get_apertus_model
 # Note: MAX_TOOL_CALLS can be imported from policies for guard logic if needed
 
 
-class LegalAgent:
-
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.agent = create_legal_agent(api_key=self.api_key)
-
-    def invoke(self, input: str):
-        return self.agent.invoke(input)
-
-
-
-
 def should_skip_analysis(state: AgentState) -> Literal["aggregate", "win_likelihood"]:
     """
     Conditional edge function to determine if analysis should be skipped.

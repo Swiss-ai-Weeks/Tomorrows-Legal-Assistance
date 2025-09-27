@@ -4,11 +4,10 @@ API routes for the legal assistance application.
 
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
-from backend.agent_with_tools.graph import LegalAgent
+from backend.agent_with_tools.graph import create_legal_agent
 from backend.agent_with_tools.schemas import CaseInput, AgentOutput
 from core.config import settings
 
-agent = LegalAgent(api_key=settings.APERTUS_API_KEY)
 
 router = APIRouter()
 
@@ -19,7 +18,8 @@ async def run_agent(case_input: CaseInput) -> AgentOutput:
     """
     try:
         # Create the agent, passing the API key from settings
-        
+        agent = create_legal_agent(api_key=settings.APERTUS_API_KEY)
+
         # Prepare the initial state for the agent
         initial_state = {"case_input": case_input}
 
