@@ -76,13 +76,13 @@ def rag_swiss_law(query: str, top_k: int = 5) -> List[Doc]:
             
             doc = Doc(
                 id=metadata.get('id', f'doc_{i}'),
-                title=filename,
-                snippet=doc_text[:500] + "..." if len(doc_text) > 500 else doc_text,
+                title=f'{filename}_{i}',
+                snippet=doc_text,#[:500] + "..." if len(doc_text) > 500 else doc_text,
                 citation=metadata.get('citation', filename)
             )
             
             # Add relevant documents first, others if we have space
-            if is_relevant or len(docs) < top_k:
+            if True or is_relevant or len(docs) < top_k:
                 docs.append(doc)
                 
         # Limit to requested number
