@@ -2,7 +2,9 @@
 
 ![Titelblatt](presi/Slide_2_Problem_Statement.png)
 
-![Titelblatt](presi/Slide_3_Solution3_en.png)
+![Titelblatt](presi/Slide_3_Solution_en.png)
+
+![Titelblatt](presi/Slide_3_Solution_ch.png)
 
 ![Titelblatt](presi/Slide_4_Facts.png)
 
