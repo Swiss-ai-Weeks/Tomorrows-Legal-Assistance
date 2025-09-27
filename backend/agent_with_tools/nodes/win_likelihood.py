@@ -6,7 +6,9 @@ from backend.agent_with_tools.tools.rag_swiss_law import rag_swiss_law
 from backend.agent_with_tools.tools.historic_cases import historic_cases
 from backend.agent_with_tools.tools.estimate_likelihood import estimate_business_likelihood, get_likelihood_explanation_context
 from backend.agent_with_tools.policies import WIN_LIKELIHOOD_PROMPT, MAX_RAG_CALLS, MAX_HISTORIC_CALLS, MAX_BUSINESS_LIKELIHOOD_CALLS
+import os
 
+GEMINI_LLM = os.getenv("GEMINI_LLM", "FALSE") == "TRUE"
 
 def win_likelihood_node(state: AgentState, llm) -> AgentState:
     """
@@ -78,7 +80,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
             else:
                 law_query = f"Swiss law {category} legal regulations"
             
-            law_docs = rag_swiss_law(law_query, top_k=3)  # Increased for better matching
+            law_docs = rag_swiss_law(law_query)
             state.tool_call_count += 1
             rag_calls += 1
             
@@ -161,7 +163,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
             
             if law_docs:
                 law_context = "\n".join([
-                    f"- {doc.title}: {doc.snippet}" for doc in law_docs[:2]
+                    f"- {doc.title}: {doc.snippet}" for doc in law_docs[:MAX_RAG_CALLS]
                 ])
                 context_parts.append(f"Relevant Swiss Law:\n{law_context}")
                 
@@ -169,7 +171,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
                 if not any("fallback" in doc.id for doc in (state.source_documents or [])):
                     if state.source_documents is None:
                         state.source_documents = []
-                    state.source_documents.extend(law_docs[:2])
+                    state.source_documents.extend(law_docs[:MAX_RAG_CALLS])
                 
     except NotImplementedError:
         context_parts.append("Swiss law documents: Not available (stub implementation)")
@@ -198,17 +200,20 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
             
             if similar_cases:
                 cases_context = "\n".join([
-                    f"- **Case {case.year}** ({case.court}): {case}... → **Outcome: {case.outcome.upper()}**"
+                    f"- **Case citation {case.citation}** ({case.year}) ({case.court}): {case.summary} → **Outcome: {case.outcome.upper()}**"
+
                     for case in similar_cases[:MAX_HISTORIC_CALLS] # case.summary[:200]
                 ])
                 context_parts.append(f"Historic Precedent Cases (CRITICAL for assessment):\n{cases_context}")
                 
                 # Add to explanation parts for transparency
                 cases_summary = f"Found {len(similar_cases)} similar cases: " + ", ".join([
-                    f"{case.year} ({case.outcome})" for case in similar_cases[:3]
+                    f"{case.citation} ({case.year}) ({case.outcome})" for case in similar_cases[:3]
                 ])
-                state.explanation_parts.append(f"Historic cases analysis: {cases_summary}")
-                # state.explanation_parts.append(f"Historic cases analysis: {context_parts}")
+                if GEMINI_LLM:
+                    state.explanation_parts.append(f"Historic cases analysis: {context_parts}")
+                else:
+                    state.explanation_parts.append(f"Historic cases analysis: {cases_summary}")
                 
     except NotImplementedError:
         context_parts.append("Historic cases: Not available (stub implementation)")
