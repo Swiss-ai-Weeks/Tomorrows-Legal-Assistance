@@ -55,11 +55,13 @@ class LegalRetriever:
         """
         try:
 
-            result = self.client.models.embed_content(
-                model="gemini-embedding-001",
-                contents=text
+            result = genai.embed_content(
+                model="models/embedding-001",
+                content=text,
+                task_type="retrieval_query",
+                output_dimensionality=768
             )
-            return [embedding.values for embedding in result.embeddings][0]
+            return result['embedding']
         except Exception as e:
             print(f"❌ Error generating embedding for query: {e}")
             # Return a zero vector as a fallback.

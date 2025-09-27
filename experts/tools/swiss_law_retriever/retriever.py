@@ -40,7 +40,7 @@ class LegalRetriever:
             # Raise a connection error if the database connection fails.
             raise ConnectionError(f"Failed to connect to ChromaDB at '{self.db_path}': {e}")
 
-    def _generate_embedding(self, text: str, model: str = "models/text-embedding-004") -> List[float]:
+    def _generate_embedding(self, text: str, model: str = "models/embedding-001") -> List[float]:
         """
         Generate a vector embedding for the given text using the Gemini API.
 
@@ -58,7 +58,9 @@ class LegalRetriever:
             # Use the Gemini API to create an embedding for the content.
             result = genai.embed_content(
                 model=model,
-                content=text
+                content=text,
+                task_type="retrieval_query",
+                output_dimensionality=768
             )
             return result['embedding']
         except Exception as e:

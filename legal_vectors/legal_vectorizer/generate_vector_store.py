@@ -1,6 +1,6 @@
 import os
 import pymupdf4llm  # PyMuPDF
-from google import genai
+import google.generativeai as genai
 from chromadb import Client
 from chromadb.config import Settings
 import chromadb
@@ -31,16 +31,13 @@ def get_gemini_embeddings(texts: List[str]) -> List[List[float]]:
     for i in range(0, len(texts), batch_size):
         batch = texts[i:i + batch_size]
         try:
-            # Generate embeddings for the batch
-
-            client = genai.Client()
-
-            result = client.models.embed_content(
-                model="gemini-embedding-001",
-                contents=batch
+            result = genai.embed_content(
+                model="models/embedding-001",
+                content=batch,
+                task_type="retrieval_document",
+                output_dimensionality=768
             )
-
-            embeddings.extend([embedding.values for embedding in result.embeddings])
+            embeddings.extend(result['embedding'])
             print(f"✅ Generated embeddings for batch {i//batch_size + 1}")
             
         except Exception as e:
