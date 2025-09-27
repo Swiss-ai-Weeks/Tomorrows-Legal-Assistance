@@ -28,6 +28,12 @@ from retriever_v2 import LegalRetriever
 retriever = LegalRetriever()
 
 
+from retriever import LegalRetriever
+
+# Initialize the retriever
+retriever = LegalRetriever()
+
+
 def rag_swiss_law(query: str, top_k: int = 5) -> List[Doc]:
     """
     Retrieve relevant Swiss law documents using RAG.

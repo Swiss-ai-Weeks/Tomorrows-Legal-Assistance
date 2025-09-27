@@ -150,7 +150,7 @@ if __name__ == '__main__':
         retriever = LegalRetriever()
         
         # Example query
-        user_query = "What are the key responsibilities of a data protection officer under GDPR?"
+        user_query = "Arbeitchert"
         
         # Retrieve the information
         response = retriever.retrieve(user_query)
