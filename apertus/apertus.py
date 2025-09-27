@@ -113,9 +113,6 @@ else:
 
 
 
-
-
-
 if __name__ == "__main__":
     import os
     llm = LangchainApertus(api_key=os.environ.get("API_KEY"))
