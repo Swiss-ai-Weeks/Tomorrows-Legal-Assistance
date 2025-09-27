@@ -178,18 +178,36 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     historic_calls = 0
     try:
         if historic_calls < MAX_HISTORIC_CALLS:
-            # Query similar cases
-            cases_query = f"{category} similar case outcomes"
-            similar_cases = historic_cases(cases_query, top_k=2)  # Reduced for performance
+            # Create specific query based on case content and category for better matching
+            case_keywords = case_text.lower()
+            if "Arbeitsrecht" in category:
+                if any(term in case_keywords for term in ["kündigung", "termination", "dismissed", "fired"]):
+                    cases_query = f"employment termination dismissal wrongful firing {category}"
+                elif any(term in case_keywords for term in ["wage", "salary", "lohn", "payment"]):
+                    cases_query = f"employment wage salary payment dispute {category}"
+                elif any(term in case_keywords for term in ["mobbing", "harassment", "discrimination"]):
+                    cases_query = f"employment harassment mobbing workplace discrimination {category}"
+                else:
+                    cases_query = f"employment law workplace dispute {category}"
+            else:
+                cases_query = f"{category} similar case outcomes"
+                
+            similar_cases = historic_cases(cases_query, top_k=3)  # Get more cases for better context
             state.tool_call_count += 1
             historic_calls += 1
             
             if similar_cases:
                 cases_context = "\n".join([
-                    f"- {case.year} {case.court}: {case.summary} → {case.outcome}" 
+                    f"- **Case {case.year}** ({case.court}): {case.summary[:200]}... → **Outcome: {case.outcome.upper()}**"
                     for case in similar_cases[:2]
                 ])
-                context_parts.append(f"Similar Historic Cases:\n{cases_context}")
+                context_parts.append(f"Historic Precedent Cases (CRITICAL for assessment):\n{cases_context}")
+                
+                # Add to explanation parts for transparency
+                cases_summary = f"Found {len(similar_cases)} similar cases: " + ", ".join([
+                    f"{case.year} ({case.outcome})" for case in similar_cases[:3]
+                ])
+                state.explanation_parts.append(f"Historic cases analysis: {cases_summary}")
                 
     except NotImplementedError:
         context_parts.append("Historic cases: Not available (stub implementation)")
@@ -230,13 +248,15 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
         
         Format your response as:
         SCORE: [number from 1-100]
-        REASONING: [1-2 clear sentences explaining why this score, focusing on key legal strengths or weaknesses]
+        REASONING: [Provide detailed analysis citing SPECIFIC sources - mention Swiss law articles, historic case outcomes, and business logic baseline. Explain how similar cases inform your assessment.]
         
         Guidelines:
         - RESPECT the baseline percentage - it's based on real case outcomes
+        - EXPLICITLY reference historic precedent cases in your reasoning if provided
+        - Mention specific Swiss law provisions that apply
         - Only adjust within the specified range unless extraordinary circumstances
         - Swiss legal system is predictable - don't overestimate chances
-        - Focus on realistic legal assessment, not optimistic scenarios
+        - Focus on realistic legal assessment informed by precedents and law
         - Ignore any "stub" or "not available" data
         """)
     ]
