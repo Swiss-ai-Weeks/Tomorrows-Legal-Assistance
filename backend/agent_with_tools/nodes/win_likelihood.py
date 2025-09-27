@@ -19,6 +19,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     Returns:
         Updated state with likelihood_win score
     """
+    print("In Win likelihood")
     category = state.category.category if state.category else "Unknown"
     case_text = state.case_input.text
     
@@ -176,6 +177,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     
     # Try to gather historic cases
     historic_calls = 0
+    print("START HISTORICAL")
     try:
         if historic_calls < MAX_HISTORIC_CALLS:
             # Create specific query based on case content and category for better matching
@@ -195,6 +197,8 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
             similar_cases = historic_cases(cases_query, top_k=3)  # Get more cases for better context
             state.tool_call_count += 1
             historic_calls += 1
+
+            print(similar_cases)
             
             if similar_cases:
                 cases_context = "\n".join([
