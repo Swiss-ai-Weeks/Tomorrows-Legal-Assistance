@@ -4,6 +4,7 @@ from chromadb.config import Settings
 from google import genai
 from typing import List, Dict, Optional
 
+
 class LegalRetriever:
     """
     A class to retrieve legal information from a ChromaDB vector store

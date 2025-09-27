@@ -22,6 +22,11 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(o
 experts_path = os.path.join(project_root, "experts", "tools", "swiss_law_retriever")
 sys.path.insert(0, experts_path)
 
+from retriever_v2 import LegalRetriever
+
+# Initialize the retriever
+retriever = LegalRetriever()
+
 
 from retriever import LegalRetriever
 
