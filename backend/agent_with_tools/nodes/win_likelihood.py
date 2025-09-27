@@ -22,9 +22,11 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     category = state.category.category if state.category else "Unknown"
     case_text = state.case_input.text
     
-    # Initialize explanation parts if not already done
+    # Initialize explanation parts and source documents if not already done
     if state.explanation_parts is None:
         state.explanation_parts = []
+    if state.source_documents is None:
+        state.source_documents = []
     
     # Prepare context for analysis
     context_parts = [f"Case Category: {category}", f"Case Description: {case_text}"]
@@ -53,17 +55,21 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
             case_lower = case_text.lower()
             
             if "Arbeitsrecht" in category:
-                if "terminated" in case_lower or "dismissal" in case_lower or "notice" in case_lower:
-                    law_query = "Swiss employment termination notice period OR 336 Code of Obligations dismissal protection"
-                elif "wage" in case_lower or "salary" in case_lower:
-                    law_query = "Swiss employment law wage payment obligations OR 322 Code of Obligations"
+                if "terminated" in case_lower or "dismissal" in case_lower or "kündigung" in case_lower or "notice" in case_lower:
+                    law_query = "employment termination dismissal notice period article 336 337 338 339 fristlose kündigung Arbeitsvertrag"
+                elif "wage" in case_lower or "salary" in case_lower or "lohn" in case_lower:
+                    law_query = "employment wage salary payment article 322 323 324 Lohn Arbeitslohn"
+                elif "mobbing" in case_lower or "harassment" in case_lower or "discrimination" in case_lower:
+                    law_query = "employment protection harassment discrimination article 328 328a Fürsorgepflicht"
                 else:
-                    law_query = "Swiss employment law employee rights protection OR Code of Obligations employment"
+                    law_query = "employment contract work Arbeitsvertrag article 319 320 321 employee rights obligations"
             elif "Immobilienrecht" in category:
-                if "defect" in case_lower or "damage" in case_lower:
-                    law_query = "Swiss property law hidden defects warranty OR 197 Code of Obligations"
+                if "defect" in case_lower or "damage" in case_lower or "mängel" in case_lower:
+                    law_query = "property defects warranty article 197 208 Civil Code real estate purchase"
+                elif "rent" in case_lower or "miete" in case_lower or "lease" in case_lower:
+                    law_query = "rental law lease agreement tenant landlord article 253 Civil Code"
                 else:
-                    law_query = "Swiss real estate law property disputes contracts"
+                    law_query = "real estate property law Civil Code article 641 ownership purchase contract"
             elif "Strafverkehrsrecht" in category:
                 if "license" in case_lower or "driving" in case_lower:
                     law_query = "Swiss traffic law license suspension OR Road Traffic Act penalties"
@@ -72,15 +78,73 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
             else:
                 law_query = f"Swiss law {category} legal regulations"
             
-            law_docs = rag_swiss_law(law_query, top_k=2)  # Reduced for performance
+            law_docs = rag_swiss_law(law_query, top_k=3)  # Increased for better matching
             state.tool_call_count += 1
             rag_calls += 1
+            
+            # Check if relevant documents were found and provide fallback if needed
+            if law_docs and "Arbeitsrecht" in category:
+                # Check if retrieved documents are employment-related
+                employment_related = any("SR-220" in doc.title for doc in law_docs)
+                if not employment_related:
+                    print("⚠️ RAG did not return employment law documents, using fallback knowledge")
+                    # Create fallback employment law context from known Swiss law
+                    from backend.agent_with_tools.schemas import Doc
+                    fallback_docs = [
+                        Doc(
+                            id="sr220_fallback",
+                            title="SR-220 Code of Obligations (Employment Law - Articles 319-362)",
+                            snippet="""Swiss employment law is governed by Articles 319-362 of the Code of Obligations (SR-220). 
+                            Key provisions include: Article 319 (employment contract formation), Articles 320-330 (employee duties and rights), 
+                            Articles 331-333 (employer duties including wage payment and protection), Articles 334-339 (termination including notice periods), 
+                            Article 336 (wrongful termination protection), Article 336a (protection against retaliation), 
+                            Article 337 (immediate termination for cause). Notice periods: 1 month during probation, 
+                            1-3 months based on service length thereafter. Immediate termination requires serious cause.""",
+                            citation="Swiss Code of Obligations SR-220"
+                        )
+                    ]
+                    law_docs = fallback_docs
+                    # Store fallback documents for frontend display
+                    if state.source_documents is None:
+                        state.source_documents = []
+                    state.source_documents.extend(fallback_docs)
+                    
+            elif law_docs and "Immobilienrecht" in category:
+                # Check if retrieved documents are real estate-related
+                real_estate_related = any(any(pattern in doc.title for pattern in ["SR-210", "SR-220"]) for doc in law_docs)
+                if not real_estate_related:
+                    print("⚠️ RAG did not return real estate law documents, using fallback knowledge")
+                    # Create fallback real estate law context from known Swiss law
+                    from backend.agent_with_tools.schemas import Doc
+                    fallback_docs = [
+                        Doc(
+                            id="sr210_fallback",
+                            title="Swiss Civil Code & Code of Obligations (Real Estate Law)",
+                            snippet="""Swiss real estate law is governed by the Civil Code (SR-210) and Code of Obligations (SR-220). 
+                            Key provisions include: Articles 641-729 Civil Code (property ownership), Articles 197-210 Code of Obligations (warranty for defects), 
+                            Articles 253-304 Code of Obligations (rental law). Hidden defects: Seller liable for defects not disclosed (Art. 197-210). 
+                            Notice periods for defects: 2 years for real estate. Rental law: Tenant protection, deposit rules, termination notice periods. 
+                            Property transfer requires notarization and land register entry.""",
+                            citation="Swiss Civil Code SR-210 & Code of Obligations SR-220"
+                        )
+                    ]
+                    law_docs = fallback_docs
+                    # Store fallback documents for frontend display
+                    if state.source_documents is None:
+                        state.source_documents = []
+                    state.source_documents.extend(fallback_docs)
             
             if law_docs:
                 law_context = "\n".join([
                     f"- {doc.title}: {doc.snippet}" for doc in law_docs[:2]
                 ])
                 context_parts.append(f"Relevant Swiss Law:\n{law_context}")
+                
+                # Store source documents for frontend display (only if not already added by fallback)
+                if not any("fallback" in doc.id for doc in (state.source_documents or [])):
+                    if state.source_documents is None:
+                        state.source_documents = []
+                    state.source_documents.extend(law_docs[:2])
                 
     except NotImplementedError:
         context_parts.append("Swiss law documents: Not available (stub implementation)")

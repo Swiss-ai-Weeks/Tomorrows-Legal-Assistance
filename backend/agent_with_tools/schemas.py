@@ -61,6 +61,7 @@ class AgentOutput(BaseModel):
     estimated_time: Optional[str] = Field(None, description="Time estimate (ISO 8601 duration or human string)")
     estimated_cost: Optional[str] = Field(None, description="Cost estimate as string (e.g., '3500 CHF')")
     explanation: Optional[str] = Field(None, description="Reasoning and explanation for the analysis")
+    source_documents: Optional[list[Doc]] = Field(None, description="Source documents used in the analysis")
 
 
 class AgentState(BaseModel):
@@ -78,6 +79,7 @@ class AgentState(BaseModel):
     case_facts: Optional[Dict[str, Any]] = None
     tool_call_count: int = 0
     explanation_parts: Optional[list[str]] = None  # Collect explanation parts during analysis
+    source_documents: Optional[list[Doc]] = None  # Collect source documents used during analysis
     
     # Final output
     result: Optional[AgentOutput] = None

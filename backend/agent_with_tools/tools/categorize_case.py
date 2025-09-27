@@ -57,9 +57,20 @@ def categorize_case(text: str) -> CategoryResult:
             category = "Andere"
             confidence = 0.60  # Lower confidence for ambiguous cases
         else:
-            # Neither category matches
-            category = "Andere"
-            confidence = 0.70  # Medium confidence for clear non-match
+            # Neither category matches - check for real estate law patterns
+            text_lower = text.lower()
+            real_estate_terms = [
+                "immobilien", "haus", "wohnung", "grundstück", "eigentum", "miete", "vermieter", 
+                "mieter", "kaufvertrag", "mängel", "defekt", "property", "house", "apartment", 
+                "real estate", "purchase", "defect", "landlord", "tenant", "rent", "lease"
+            ]
+            
+            if any(term in text_lower for term in real_estate_terms):
+                category = "Immobilienrecht"
+                confidence = 0.75  # Good confidence for pattern match
+            else:
+                category = "Andere"
+                confidence = 0.70  # Medium confidence for clear non-match
             
         return CategoryResult(category=category, confidence=confidence)
         
