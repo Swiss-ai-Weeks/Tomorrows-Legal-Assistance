@@ -57,6 +57,22 @@ def generate_vector_store(data_folder: str = "../../data/emails_federal_court/*.
 
     # Drop rows where the 'email' column is empty
     df.dropna(subset=['email'], inplace=True)
+
+    import pandas as pd
+
+    # First, find the number of samples in the smallest class
+    min_count = df['outcome'].value_counts().min()
+
+    # Now, group by the 'outcomes' column and take a random sample of 'min_count' from each group
+    df_balanced = df.groupby('outcome').sample(n=min_count, random_state=42)
+
+    # It's good practice to shuffle the resulting dataframe
+    df_balanced = df_balanced.sample(frac=1, random_state=42).reset_index(drop=True)
+
+    # Now, df_balanced has a 50/50 split
+    # print(df_balanced['case_status'].value_counts())
+
+    df_balanced = df_balanced.sample(frac=0.1, random_state=42)
    
     # Delete existing collection if it exists to avoid conflicts
     try:
@@ -70,7 +86,7 @@ def generate_vector_store(data_folder: str = "../../data/emails_federal_court/*.
     )
 
     # TODO: Prepare emails from the 'email' column
-    emails_prepared = df['email'].astype(str).tolist()
+    emails_prepared = df_balanced['email'].astype(str).tolist()
    
     embeddings = get_gemini_embeddings(emails_prepared)
            
@@ -88,9 +104,9 @@ def generate_vector_store(data_folder: str = "../../data/emails_federal_court/*.
         
         # TODO: Create metadata from all other columns
         row_metadata = {}
-        for col in df.columns:
+        for col in df_balanced.columns:
             if col != 'email':  # Exclude the email column since it's the document content
-                value = df.iloc[i][col]
+                value = df_balanced.iloc[i][col]
                 # Convert to string and handle NaN values
                 if pd.isna(value):
                     row_metadata[col] = ""
@@ -107,9 +123,9 @@ def generate_vector_store(data_folder: str = "../../data/emails_federal_court/*.
         metadatas=metadatas
     )
    
-    print(f"✅ Added {len(df)} chunks from {path_base_df}")
+    print(f"✅ Added {len(df_balanced)} chunks from {path_base_df}")
    
-    print(f"🎉 Total chunks processed: {len(df)}")
+    print(f"🎉 Total chunks processed: {len(df_balanced)}")
     return collection
 
 def query_gemini_embedding(query_text: str, model_name: str = "gemini-embedding-001") -> List[float]:
