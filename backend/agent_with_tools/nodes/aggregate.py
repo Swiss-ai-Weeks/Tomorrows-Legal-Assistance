@@ -29,7 +29,8 @@ def aggregate_node(state: AgentState) -> AgentState:
             likelihood_win=None,
             estimated_time=None,
             estimated_cost=None,
-            explanation=explanation
+            explanation=explanation,
+            source_documents=state.source_documents or []
         )
         return state
     
@@ -92,7 +93,8 @@ def aggregate_node(state: AgentState) -> AgentState:
         likelihood_win=likelihood,
         estimated_time=time_str,
         estimated_cost=cost_output,
-        explanation=explanation
+        explanation=explanation,
+        source_documents=state.source_documents or []
     )
     
     return state

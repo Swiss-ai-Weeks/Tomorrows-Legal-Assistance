@@ -69,6 +69,51 @@ with st.sidebar:
             file_name=file_name,
             mime="text/markdown",
         )
+        
+        # Add PDF downloads if source documents are available in the most recent assistant message
+        if "source_documents" in st.session_state:
+            st.subheader("📄 Source Documents")
+            for doc in st.session_state.source_documents:
+                doc_id = doc.get('id', '')
+                title = doc.get('title', 'Unknown Document')
+                
+                # Handle fallback documents differently
+                if 'fallback' in doc_id:
+                    st.info(f"📚 **{title}**\n\nThis is reference information about Swiss employment law. The actual Code of Obligations (SR-220) PDF is available but not currently indexed in the search system.")
+                    
+                    # Try to find the actual SR-220 PDF
+                    sr220_files = [f for f in os.listdir(os.path.join(os.path.dirname(__file__), "..", "data", "swiss_law")) 
+                                  if f.startswith("SR-220")]
+                    if sr220_files:
+                        pdf_path = os.path.join(os.path.dirname(__file__), "..", "data", "swiss_law", sr220_files[0])
+                        with open(pdf_path, "rb") as pdf_file:
+                            pdf_data = pdf_file.read()
+                        
+                        st.download_button(
+                            label=f"📖 Download {sr220_files[0]} (Code of Obligations)",
+                            data=pdf_data,
+                            file_name=sr220_files[0],
+                            mime="application/pdf",
+                            key=f"download_{sr220_files[0]}"
+                        )
+                else:
+                    # Regular document - try to find PDF
+                    filename = title if title.endswith('.pdf') else f"{title}.pdf"
+                    pdf_path = os.path.join(os.path.dirname(__file__), "..", "data", "swiss_law", filename)
+                    
+                    if os.path.exists(pdf_path):
+                        with open(pdf_path, "rb") as pdf_file:
+                            pdf_data = pdf_file.read()
+                        
+                        st.download_button(
+                            label=f"📖 {filename}",
+                            data=pdf_data,
+                            file_name=filename,
+                            mime="application/pdf",
+                            key=f"download_{filename}"
+                        )
+                    else:
+                        st.warning(f"PDF not found: {filename}")
 
 st.title("Tomorrow's Legal Assistant")
 
@@ -195,6 +240,44 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 {explanation}
 """
 
+                # Add source documents if available
+                source_documents = analysis_result.get('source_documents', [])
+                if source_documents:
+                    processed_text += """
+
+**Source Documents:**
+"""
+                    for doc in source_documents:
+                        doc_id = doc.get('id', '')
+                        title = doc.get('title', 'Unknown Document')
+                        snippet = doc.get('snippet', 'No preview available')
+                        
+                        # Handle fallback documents differently
+                        if 'fallback' in doc_id:
+                            processed_text += f"""
+📄 **{title}**
+   - Swiss Employment Law Summary: "{snippet[:300]}..."
+   - 📖 Code of Obligations PDF available for download (see sidebar)
+"""
+                        else:
+                            # Regular document
+                            filename = title
+                            pdf_path = os.path.join(os.path.dirname(__file__), "..", "data", "swiss_law", filename)
+                            
+                            # Check if file exists and add preview
+                            if os.path.exists(pdf_path):
+                                processed_text += f"""
+📄 **{filename}**
+   - Extract: "{snippet[:200]}..."
+   - PDF available for download (use sidebar after analysis)
+"""
+                            else:
+                                processed_text += f"""
+📄 **{filename}**
+   - Extract: "{snippet[:200]}..."
+   - (PDF file not accessible)
+"""
+
             except requests.exceptions.RequestException as e:
                 st.error(f"Failed to connect to the backend: {e}")
                 st.stop()
@@ -209,6 +292,10 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             time.sleep(0.05)
             message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
+        
+        # Store source documents in session state for sidebar access
+        if source_documents:
+            st.session_state.source_documents = source_documents
         
     st.session_state.messages.append({"role": "assistant", "content": full_response})
     st.rerun()
