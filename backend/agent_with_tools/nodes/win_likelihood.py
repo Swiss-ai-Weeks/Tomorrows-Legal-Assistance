@@ -19,7 +19,6 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     Returns:
         Updated state with likelihood_win score
     """
-    print("In Win likelihood")
     category = state.category.category if state.category else "Unknown"
     case_text = state.case_input.text
     
@@ -177,7 +176,6 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
     
     # Try to gather historic cases
     historic_calls = 0
-    print("START HISTORICAL")
     try:
         if historic_calls < MAX_HISTORIC_CALLS:
             # Create specific query based on case content and category for better matching
@@ -194,16 +192,14 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
             else:
                 cases_query = f"{category} similar case outcomes"
                 
-            similar_cases = historic_cases(cases_query, top_k=3)  # Get more cases for better context
+            similar_cases = historic_cases(cases_query, top_k=MAX_HISTORIC_CALLS)  # Get more cases for better context
             state.tool_call_count += 1
             historic_calls += 1
-
-            print(similar_cases)
             
             if similar_cases:
                 cases_context = "\n".join([
-                    f"- **Case {case.year}** ({case.court}): {case.summary[:200]}... → **Outcome: {case.outcome.upper()}**"
-                    for case in similar_cases[:2]
+                    f"- **Case {case.year}** ({case.court}): {case}... → **Outcome: {case.outcome.upper()}**"
+                    for case in similar_cases[:2] # case.summary[:200]
                 ])
                 context_parts.append(f"Historic Precedent Cases (CRITICAL for assessment):\n{cases_context}")
                 
@@ -212,6 +208,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
                     f"{case.year} ({case.outcome})" for case in similar_cases[:3]
                 ])
                 state.explanation_parts.append(f"Historic cases analysis: {cases_summary}")
+                # state.explanation_parts.append(f"Historic cases analysis: {context_parts}")
                 
     except NotImplementedError:
         context_parts.append("Historic cases: Not available (stub implementation)")
