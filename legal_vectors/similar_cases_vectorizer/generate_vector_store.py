@@ -1,38 +1,25 @@
 import os
-import pymupdf4llm  # PyMuPDF
 from google import genai
 from chromadb import Client
 from chromadb.config import Settings
 import chromadb
 from typing import List
 import re
-from langchain.text_splitter import MarkdownTextSplitter
-
-splitter = MarkdownTextSplitter(chunk_size=2048, chunk_overlap=300)
-
-def extract_text_from_pdf(pdf_path: str) -> str:
-    """Extract text from PDF using pymupdf4llm"""
-    try:
-        doc = pymupdf4llm.to_markdown(pdf_path)
-        return doc  # pymupdf4llm.to_markdown returns a string directly
-    except Exception as e:
-        print(f"Error extracting text from {pdf_path}: {e}")
-        return ""
+from tqdm import tqdm
 
 def get_gemini_embeddings(texts: List[str]) -> List[List[float]]:
     """
     Generate embeddings using Google's Gemini embedding model
     """
     embeddings = []
-    
+   
     # Process texts in batches to avoid API limits
     batch_size = 100  # Adjust based on API limits
-    
-    for i in range(0, len(texts), batch_size):
+   
+    for i in tqdm(range(0, len(texts), batch_size)):
         batch = texts[i:i + batch_size]
         try:
             # Generate embeddings for the batch
-
             client = genai.Client()
 
             result = client.models.embed_content(
@@ -41,90 +28,88 @@ def get_gemini_embeddings(texts: List[str]) -> List[List[float]]:
             )
 
             embeddings.extend([embedding.values for embedding in result.embeddings])
-            print(f"✅ Generated embeddings for batch {i//batch_size + 1}")
-            
+            # print(f"✅ Generated embeddings for batch {i//batch_size + 1}")
+           
         except Exception as e:
             print(f"❌ Error generating embeddings for batch {i//batch_size + 1}: {e}")
             # Add zero embeddings as fallback
             fallback_embedding = [0.0] * 768  # Default embedding dimension
             embeddings.extend([fallback_embedding] * len(batch))
-    
+   
     return embeddings
 
-def generate_vector_store(data_folder: str = "../../data/swiss_law"):
+def generate_vector_store(data_folder: str = "../../data/emails_federal_court/*.parquet", path_base_df: str = "../../data/bger-2024-3.csv"):
     """
     Generate vector store using Gemini embeddings
     """
     # Initialize persistent ChromaDB client and collection
     client = chromadb.PersistentClient(path="./chroma_db", settings=Settings())
-    
+
+    import pandas as pd
+    import glob
+
+    files = glob.glob(data_folder)
+    df_emails = pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
+   
+    df_base = pd.read_csv(path_base_df)
+                         
+    df = pd.merge(df_base, df_emails, on='docref', how='inner')
+
+    # Drop rows where the 'email' column is empty
+    df.dropna(subset=['email'], inplace=True)
+   
     # Delete existing collection if it exists to avoid conflicts
     try:
-        client.delete_collection(name="pdf_vectors_gemini")
+        client.delete_collection(name="similar_vectors_gemini")
     except:
         pass
-    
+   
     collection = client.create_collection(
-        name="pdf_vectors_gemini",
-        metadata={"description": "PDF vectors using Gemini embeddings"}
+        name="similar_vectors_gemini",
+        metadata={"description": "emails similar cases vectors using Gemini embeddings"}
     )
 
-    total_chunks = 0
-    
-    # Recursively traverse all subfolders
-    for root, dirs, files in os.walk(data_folder):
-        pdf_files = [f for f in files if f.lower().endswith(".pdf")]
+    # TODO: Prepare emails from the 'email' column
+    emails_prepared = df['email'].astype(str).tolist()
+   
+    embeddings = get_gemini_embeddings(emails_prepared)
+           
+    doc_ids = []
+    documents = []
+    metadatas = []
+    embeddings_list = []
+   
+    for i, (chunk, embedding) in enumerate(zip(emails_prepared, embeddings)):
+        # TODO: Create unique document ID
+        doc_id = f"email_{i}_{hash(chunk) % 1000000}"
+        doc_ids.append(doc_id)
+        documents.append(chunk)
+        embeddings_list.append(embedding)
         
-        for filename in pdf_files:
-            pdf_path = os.path.join(root, filename)
-            print(f"📄 Processing: {pdf_path}")
-
-            # Extract and chunk text
-            text = extract_text_from_pdf(pdf_path)
-            if not text:
-                print(f"⚠️  No text extracted from {pdf_path}")
-                continue
-                
-            chunks = [doc for doc in splitter.split_text(text)]
-            print(f"📝 Created {len(chunks)} chunks from {filename}")
-
-            if not chunks:
-                print(f"⚠️  No chunks created from {pdf_path}")
-                continue
-
-            # Generate embeddings using Gemini
-            embeddings = get_gemini_embeddings(chunks)
-
-            # Add each chunk + its embedding to ChromaDB
-            doc_ids = []
-            documents = []
-            metadatas = []
-            embeddings_list = []
-            
-            for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-                doc_id = f"{os.path.relpath(pdf_path, data_folder)}_{i}"
-                doc_ids.append(doc_id)
-                documents.append(chunk)
-                embeddings_list.append(embedding)
-                metadatas.append({
-                    "source": pdf_path,
-                    "chunk_index": i,
-                    "filename": filename,
-                    "chunk_size": len(chunk)
-                })
-            
-            # Batch add to ChromaDB
-            collection.add(
-                documents=documents,
-                embeddings=embeddings_list,
-                ids=doc_ids,
-                metadatas=metadatas
-            )
-            
-            total_chunks += len(chunks)
-            print(f"✅ Added {len(chunks)} chunks from {filename}")
-    
-    print(f"🎉 Total chunks processed: {total_chunks}")
+        # TODO: Create metadata from all other columns
+        row_metadata = {}
+        for col in df.columns:
+            if col != 'email':  # Exclude the email column since it's the document content
+                value = df.iloc[i][col]
+                # Convert to string and handle NaN values
+                if pd.isna(value):
+                    row_metadata[col] = ""
+                else:
+                    row_metadata[col] = str(value)
+        
+        metadatas.append(row_metadata)
+   
+    # Batch add to ChromaDB
+    collection.add(
+        documents=documents,
+        embeddings=embeddings_list,
+        ids=doc_ids,
+        metadatas=metadatas
+    )
+   
+    print(f"✅ Added {len(df)} chunks from {path_base_df}")
+   
+    print(f"🎉 Total chunks processed: {len(df)}")
     return collection
 
 def query_gemini_embedding(query_text: str, model_name: str = "gemini-embedding-001") -> List[float]:
@@ -132,7 +117,6 @@ def query_gemini_embedding(query_text: str, model_name: str = "gemini-embedding-
     Generate embedding for query using Gemini
     """
     try:
-        
         client = genai.Client()
 
         result = client.models.embed_content(
@@ -150,7 +134,7 @@ def query(collection, query_text: str = None, n_results: int = 3):
     """
     if query_text is None:
         query_text = "Does Swiss law require an employer to give multiple warnings before firing an employee for just cause?"
-    
+   
     print(f"\n🔍 Generating embedding for query: \"{query_text}\"\n")
     query_embedding = query_gemini_embedding(query_text)
 
@@ -166,12 +150,21 @@ def query(collection, query_text: str = None, n_results: int = 3):
         doc = results["documents"][0][i]
         metadata = results["metadatas"][0][i] if results["metadatas"][0] else {}
         distance = results["distances"][0][i]
-        
+       
         print(f"📄 Result {i+1}")
         print(f"📁 Source: {metadata.get('filename', 'Unknown')}")
         print(f"🔢 Similarity Score: {1 - distance:.4f}")
         print(f"📏 Distance: {distance:.4f}")
         print(f"📝 Content Preview:\n{doc[:300]}...")
+        
+        # Display some metadata fields
+        print(f"📋 Metadata:")
+        for key, value in list(metadata.items())[:5]:  # Show first 5 metadata fields
+            if key != 'filename':  # Already shown above
+                print(f"   {key}: {value}")
+        if len(metadata) > 5:
+            print(f"   ... and {len(metadata) - 5} more fields")
+        
         print("-" * 80)
 
 def main():
@@ -183,20 +176,20 @@ def main():
         print("❌ Please set your GOOGLE_API_KEY environment variable")
         print("   export GOOGLE_API_KEY='your_api_key_here'")
         return
-    
-    print("🚀 Starting PDF vectorization with Gemini embeddings...")
-    
+   
+    print("🚀 Starting df vectorization with Gemini embeddings...")
+   
     # Generate vector store
     collection = generate_vector_store()
-    
+   
     # Query the collection
     query(collection)
-    
+   
     # Interactive query mode
     print("\n" + "="*50)
     print("💬 Interactive Query Mode (type 'quit' to exit)")
     print("="*50)
-    
+   
     while True:
         user_query = input("\n🔍 Enter your query: ").strip()
         if user_query.lower() in ['quit', 'exit', 'q']:
