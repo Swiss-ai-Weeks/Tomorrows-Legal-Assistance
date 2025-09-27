@@ -7,9 +7,13 @@ from typing import Dict, Any
 from backend.agent_with_tools.graph import create_legal_agent
 from backend.agent_with_tools.schemas import CaseInput, AgentOutput
 from core.config import settings
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 @router.post("/agent_with_tools", response_model=AgentOutput)
 async def run_agent(case_input: CaseInput) -> AgentOutput:
@@ -30,18 +34,24 @@ async def run_agent(case_input: CaseInput) -> AgentOutput:
         analysis_result = final_state.get("result")
 
         if not analysis_result:
-            raise HTTPException(status_code=500, detail="Agent failed to produce a result.")
-        print(analysis_result)
+            raise HTTPException(
+                status_code=500, detail="Agent failed to produce a result."
+            )
         return analysis_result
     except Exception as e:
         # Catch potential errors during agent execution
-        raise HTTPException(status_code=500, detail=f"An error occurred during agent execution: {str(e)}")
+        logger.exception(e)
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occurred during agent execution: {str(e)}",
+        )
 
 
 @router.get("/")
 async def api_root() -> Dict[str, str]:
     """API root endpoint."""
     return {"message": "Legal Assistance API", "status": "running"}
+
 
 @router.get("/legal-advice")
 async def get_legal_advice() -> Dict[str, Any]:
@@ -52,8 +62,9 @@ async def get_legal_advice() -> Dict[str, Any]:
     return {
         "advice": "This is a placeholder for legal advice functionality",
         "disclaimer": "This is not actual legal advice. Consult a qualified attorney.",
-        "categories": ["contract", "employment", "property", "family"]
+        "categories": ["contract", "employment", "property", "family"],
     }
+
 
 @router.post("/legal-advice")
 async def create_legal_query(query: Dict[str, Any]) -> Dict[str, Any]:
@@ -65,5 +76,5 @@ async def create_legal_query(query: Dict[str, Any]) -> Dict[str, Any]:
         "status": "received",
         "query_id": "placeholder-id-123",
         "message": "Your legal query has been received and will be processed",
-        "submitted_query": query
+        "submitted_query": query,
     }
