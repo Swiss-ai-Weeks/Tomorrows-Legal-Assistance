@@ -3,7 +3,6 @@ import time
 import os
 import sys
 import re
-import textwrap
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
@@ -22,7 +21,7 @@ st.set_page_config(
     page_icon="frontend/media/favicon.ico"
 )
 
-# Custom CSS to make font smaller
+# Custom CSS for styling
 st.markdown("""
 <style>
 .stApp {
@@ -46,6 +45,40 @@ def sanitize_filename(filename):
 # Sidebar for chat management
 with st.sidebar:
     st.image("frontend/media/AXA_Versicherungen_Logo.svg.png", width=150)
+    
+    # Audio control
+    st.markdown("### 🎵 Background Music")
+    
+    # Initialize audio state
+    if "audio_enabled" not in st.session_state:
+        st.session_state.audio_enabled = False
+    
+    # Audio toggle button
+    audio_button_text = "🔊 Music ON" if st.session_state.audio_enabled else "🔇 Music OFF"
+    if st.button(audio_button_text, key="audio_toggle"):
+        st.session_state.audio_enabled = not st.session_state.audio_enabled
+        st.rerun()
+    
+    # Show audio status and player when enabled
+    if st.session_state.audio_enabled:
+        st.success("🎶 Music player enabled")
+        
+        # Load audio file
+        audio_file_path = "frontend/media/apertus.mp3"
+        with open(audio_file_path, "rb") as audio_file:
+            audio_bytes = audio_file.read()
+        
+        # Show audio player for manual control
+        st.write("**🎵 Apertus Theme Song:**")
+        st.audio(audio_bytes, format='audio/mp3')
+        
+        # Simple instructions
+        st.info("Use the audio player above to play music manually while using the app.")
+    else:
+        st.info("🔇 Music is disabled")
+    
+    st.markdown("---")
+    
     if st.button("New Chat"):
         st.session_state.clear()
         st.rerun()
@@ -147,6 +180,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     if "chat_title" not in st.session_state:
         api_key = os.environ.get("APERTUS_API_KEY")
         if api_key:
+
+            
             with st.spinner("Generating title..."):
                 try:
                     llm = LangchainApertus(api_key=api_key)
@@ -185,6 +220,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
         if not api_key:
             st.warning("APERTUS_API_KEY not set. Cannot get analysis.")
             st.stop()
+
+
 
         with st.spinner("Analyzing your situation..."):
             try:
@@ -284,6 +321,8 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
                 st.stop()
+
+
 
         # Use the processed_text for streaming
         lines = processed_text.split('\n')

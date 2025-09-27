@@ -126,6 +126,7 @@ def generate_vector_store(data_folder: str = "../../data/emails_federal_court/*.
     print(f"✅ Added {len(df_balanced)} chunks from {path_base_df}")
    
     print(f"🎉 Total chunks processed: {len(df_balanced)}")
+
     return collection
 
 def query_gemini_embedding(query_text: str, model_name: str = "gemini-embedding-001") -> List[float]:
