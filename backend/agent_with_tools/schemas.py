@@ -43,7 +43,7 @@ class Case(BaseModel):
     court: str
     year: int
     summary: str
-    outcome: Literal["win", "loss", "settled"]
+    outcome: str
     citation: Optional[str] = None
 
 
