@@ -23,6 +23,12 @@ experts_path = os.path.join(project_root, "experts", "tools", "swiss_law_retriev
 sys.path.insert(0, experts_path)
 
 
+from retriever import LegalRetriever
+
+# Initialize the retriever
+retriever = LegalRetriever()
+
+
 def rag_swiss_law(query: str, top_k: int = 5) -> List[Doc]:
     """
     Retrieve relevant Swiss law documents using RAG.
@@ -35,10 +41,6 @@ def rag_swiss_law(query: str, top_k: int = 5) -> List[Doc]:
         List of relevant Swiss law documents
     """
     try:
-        from retriever import LegalRetriever
-        
-        # Initialize the retriever
-        retriever = LegalRetriever()
         
         # Get search results with improved query
         search_results = retriever.retrieve(query, n_results=top_k)
