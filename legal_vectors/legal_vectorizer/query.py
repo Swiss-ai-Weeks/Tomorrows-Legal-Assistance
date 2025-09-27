@@ -4,7 +4,10 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
 
-def query(query_text, persist_dir="./chroma_db", collection_name="pdf_vectors", top_k=2):
+
+def query(
+    query_text, persist_dir="./chroma_db", collection_name="pdf_vectors", top_k=2
+):
     start_time = datetime.now()
     print(f"⏳ Query started at: {start_time}")
 
@@ -21,20 +24,21 @@ def query(query_text, persist_dir="./chroma_db", collection_name="pdf_vectors", 
     results = collection.query(
         query_embeddings=query_embedding,
         n_results=top_k,
-        include=["documents",  "distances"]
+        include=["documents", "distances"],
     )
 
     # Print results
-    print(f"\n🔍 Results for Query: \"{query_text}\"\n")
+    print(f'\n🔍 Results for Query: "{query_text}"\n')
     for i in range(len(results["documents"][0])):
         doc = results["documents"][0][i]
         distance = results["distances"][0][i]
         print(f"🔢 Similarity: {1 - distance:.2f}")
-        print(f"📝 Estratto:\n{doc[:1000]}...\n")  
+        print(f"📝 Estratto:\n{doc[:1000]}...\n")
 
     end_time = datetime.now()
     print(f"✅ Query completed at: {end_time}")
     print(f"⏱️ Total execution time: {end_time - start_time}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -42,4 +46,3 @@ if __name__ == "__main__":
     else:
         query_text = " ".join(sys.argv[1:])
         query(query_text)
-
