@@ -201,6 +201,7 @@ def win_likelihood_node(state: AgentState, llm) -> AgentState:
             if similar_cases:
                 cases_context = "\n".join([
                     f"- **Case citation {case.citation}** ({case.year}) ({case.court}): {case.summary} → **Outcome: {case.outcome.upper()}**"
+
                     for case in similar_cases[:MAX_HISTORIC_CALLS] # case.summary[:200]
                 ])
                 context_parts.append(f"Historic Precedent Cases (CRITICAL for assessment):\n{cases_context}")
