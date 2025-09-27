@@ -140,3 +140,6 @@ chroma_db/
 chroma.sqlite3
 
 *.code-workspace
+
+# Large media files
+*.mp3
